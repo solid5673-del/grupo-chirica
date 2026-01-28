@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grupo Chirica - Lista de Precios v3.1.0</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal active">
+        <div class="modal-content login-card">
+            <div class="logo-header">
+                <i class="fas fa-store"></i>
+                <h2>GRUPO CHIRICA</h2>
+                <p>Sistema de Lista de Precios</p>
+            </div>
+            
+            <div class="login-options">
+                <button class="btn-login" onclick="showLoginForm('vendedor')">
+                    <i class="fas fa-user"></i> Acceso Vendedor
+                </button>
+                <button class="btn-login" onclick="showLoginForm('admin')">
+                    <i class="fas fa-user-shield"></i> Acceso Administrador
+                </button>
+            </div>
+            
+            <div id="loginForm">
+                <h3 id="loginTitle">Iniciar Sesión</h3>
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Contraseña</label>
+                    <input type="password" id="passwordInput" placeholder="Ingresa tu contraseña">
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="login()">Entrar</button>
+                    <button class="btn btn-secondary" onclick="closeLogin()">Cancelar</button>
+                </div>
+                <p id="loginError" class="error-message"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="hidden">
+        <header class="main-header">
+            <div class="header-left">
+                <i class="fas fa-store"></i>
+                <h1>GRUPO CHIRICA</h1>
+                <span class="version">v3.1.0</span>
+                <span class="weather">☀️ Claro</span>
+            </div>
+            <div class="header-right">
+                <span id="userRole" class="user-badge"></span>
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fas fa-door-open"></i> Cerrar Sesión
+                </button>
+            </div>
+        </header>
+
+        <nav class="sidebar">
+            <ul>
+                <li class="active" onclick="showSection('dashboard')">
+                    <i class="fas fa-home"></i> Inicio
+                </li>
+                <li onclick="showSection('products')">
+                    <i class="fas fa-boxes"></i> Gestionar Productos
+                </li>
+                <li onclick="showSection('add-product')">
+                    <i class="fas fa-plus-circle"></i> Agregar Producto
+                </li>
+                <li onclick="showSection('pricing')">
+                    <i class="fas fa-percentage"></i> Métodos y IVA
+                </li>
+                <li onclick="showSection('adjust')">
+                    <i class="fas fa-sliders-h"></i> Ajustar Precios
+                </li>
+                <li onclick="showSection('security')">
+                    <i class="fas fa-shield-alt"></i> Seguridad
+                </li>
+                <li onclick="showSection('export')">
+                    <i class="fas fa-file-export"></i> Exportar/Importar
+                </li>
+                <li onclick="showSection('stats')">
+                    <i class="fas fa-chart-bar"></i> Estadísticas
+                </li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <!-- Dashboard Section -->
+            <section id="section-dashboard" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-boxes"></i>
+                        <h3>Total Productos</h3>
+                        <p id="totalProducts">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-dollar-sign"></i>
+                        <h3>Promedio Local</h3>
+                        <p id="avgLocal">$0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-globe"></i>
+                        <h3>Promedio Divisas</h3>
+                        <p id="avgDivisas">$0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-sync"></i>
+                        <h3>Última Actualización</h3>
+                        <p id="lastUpdate">-</p>
+                    </div>
+                </div>
+
+                <div class="products-table-container">
+                    <div class="table-header">
+                        <h2>Lista de Productos</h2>
+                        <div class="table-actions">
+                            <select id="categoryFilter" onchange="filterProducts()">
+                                <option value="">Todas las categorías</option>
+                            </select>
+                            <input type="text" id="searchInput" placeholder="Buscar..." oninput="filterProducts()">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Precio Local</th>
+                                    <th>Precio Divisas</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                                <tr>
+                                    <td colspan="5" class="no-data">No hay productos disponibles. Agrega productos desde el panel administrador.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Add Product Section -->
+            <section id="section-add-product" class="section">
+                <div class="card">
+                    <h2><i class="fas fa-plus-circle"></i> Agregar Nuevo Producto</h2>
+                    <form id="addProductForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-tag"></i> Nombre del Producto</label>
+                                <input type="text" id="productName" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-folder"></i> Categoría</label>
+                                <select id="productCategory" required>
+                                    <option value="">Selecciona una categoría</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-dollar-sign"></i> Precio Base Local ($)</label>
+                                <input type="number" id="priceLocal" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-globe"></i> Precio Base Divisas ($)</label>
+                                <input type="number" id="priceDivisas" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-info-circle"></i> Descripción</label>
+                            <textarea id="productDescription" rows="3"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Guardar Producto
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Pricing Section -->
+            <section id="section-pricing" class="section">
+                <div class="card">
+                    <h2><i class="fas fa-percentage"></i> Configurar Métodos de Pago y IVA</h2>
+                    <div class="form-group">
+                        <label><i class="fas fa-folder"></i> Selecciona la Categoría</label>
+                        <select id="pricingCategory" onchange="loadPricingConfig()">
+                            <option value="">Cargando categorías...</option>
+                        </select>
+                        <small>Los cambios se aplicarán a TODOS los productos de esta categoría</small>
+                    </div>
+
+                    <div class="payment-methods-grid">
+                        <!-- Transferencia -->
+                        <div class="payment-method-card">
+                            <div class="method-header transfer">
+                                <i class="fas fa-exchange-alt"></i>
+                                <h3>💳 Transferencia</h3>
+                            </div>
+                            <div class="method-body">
+                                <div class="form-group">
+                                    <label>Descuento (%)</label>
+                                    <input type="number" id="discountTransfer" placeholder="Ejm: 5 = 5% descuento">
+                                </div>
+                                <div class="form-group">
+                                    <label>IVA (%)</label>
+                                    <input type="number" id="ivaTransfer" placeholder="Ejm: 16 = 16% IVA">
+                                </div>
+                                <div class="form-group checkbox-group">
+                                    <label>
+                                        <input type="checkbox" id="applyIvaTransfer" checked>
+                                        Aplicar IVA
+                                    </label>
+                                </div>
+                                <button class="btn btn-primary" onclick="savePricingConfig('transfer')">
+                                    <i class="fas fa-save"></i> Guardar Configuración
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Efectivo -->
+                        <div class="payment-method-card">
+                            <div class="method-header cash">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <h3>💰 Efectivo</h3>
+                            </div>
+                            <div class="method-body">
+                                <div class="form-group">
+                                    <label>Descuento (%)</label>
+                                    <input type="number" id="discountCash" placeholder="Ejm: 3 = 3% descuento">
+                                </div>
+                                <div class="form-group">
+                                    <label>IVA (%)</label>
+                                    <input type="number" id="ivaCash" placeholder="Ejm: 16 = 16% IVA">
+                                </div>
+                                <div class="form-group checkbox-group">
+                                    <label>
+                                        <input type="checkbox" id="applyIvaCash" checked>
+                                        Aplicar IVA
+                                    </label>
+                                </div>
+                                <button class="btn btn-primary" onclick="savePricingConfig('cash')">
+                                    <i class="fas fa-save"></i> Guardar Configuración
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Divisas -->
+                        <div class="payment-method-card">
+                            <div class="method-header currency">
+                                <i class="fas fa-dollar-sign"></i>
+                                <h3>🌍 Divisas</h3>
+                            </div>
+                            <div class="method-body">
+                                <div class="form-group">
+                                    <label>Descuento (%)</label>
+                                    <input type="number" id="discountCurrency" placeholder="Ejm: 0 = sin descuento">
+                                </div>
+                                <div class="form-group">
+                                    <label>IVA (%)</label>
+                                    <input type="number" id="ivaCurrency" placeholder="Ejm: 0 = sin IVA">
+                                </div>
+                                <div class="form-group checkbox-group">
+                                    <label>
+                                        <input type="checkbox" id="applyIvaCurrency" checked>
+                                        Aplicar IVA
+                                    </label>
+                                </div>
+                                <button class="btn btn-primary" onclick="savePricingConfig('currency')">
+                                    <i class="fas fa-save"></i> Guardar Configuración
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h3><i class="fas fa-calculator"></i> Vista Previa con Precio Base: $100</h3>
+                        <div id="previewResults"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security Section -->
+            <section id="section-security" class="section">
+                <div class="card">
+                    <h2><i class="fas fa-shield-alt"></i> Cambiar Contraseña Administrador</h2>
+                    <form id="changeAdminPasswordForm">
+                        <div class="form-group">
+                            <label>Contraseña Admin Actual</label>
+                            <input type="password" id="currentAdminPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nueva Contraseña Admin</label>
+                            <input type="password" id="newAdminPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirmar Nueva Contraseña</label>
+                            <input type="password" id="confirmAdminPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-key"></i> Cambiar Contraseña Admin
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-user"></i> Cambiar Contraseña Vendedor</h2>
+                    <form id="changeSellerPasswordForm">
+                        <div class="form-group">
+                            <label>Contraseña Admin (para verificación)</label>
+                            <input type="password" id="adminPasswordVerify" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nueva Contraseña Vendedor</label>
+                            <input type="password" id="newSellerPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirmar Nueva Contraseña</label>
+                            <input type="password" id="confirmSellerPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-key"></i> Cambiar Contraseña Vendedor
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-list"></i> Contraseñas Actuales</h2>
+                    <div class="password-info">
+                        <p><strong>Admin:</strong> <span id="currentAdminPass">••••••••</span></p>
+                        <p><strong>Vendedor:</strong> <span id="currentSellerPass">••••••••</span></p>
+                    </div>
+                    <small>Estas contraseñas se pueden compartir con los vendedores para acceder a la lista de precios</small>
+                </div>
+            </section>
+
+            <!-- Export/Import Section -->
+            <section id="section-export" class="section">
+                <div class="card">
+                    <h2><i class="fas fa-file-export"></i> Exportar Productos</h2>
+                    <p>Exporta todos los productos a CSV o JSON para usar en Excel o análisis externo.</p>
+                    <div class="export-buttons">
+                        <button class="btn btn-success" onclick="exportToCSV()">
+                            <i class="fas fa-file-csv"></i> Descargar CSV
+                        </button>
+                        <button class="btn btn-info" onclick="exportToJSON()">
+                            <i class="fas fa-file-code"></i> Descargar JSON
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-file-import"></i> Importar Productos</h2>
+                    <p>Importa productos desde un archivo CSV o JSON previamente exportado.</p>
+                    <div class="import-area">
+                        <input type="file" id="importFile" accept=".csv,.json" onchange="handleFileSelect()">
+                        <label for="importFile" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Seleccionar Archivo
+                        </label>
+                        <button class="btn btn-success" id="importButton" onclick="importData()" disabled>
+                            <i class="fas fa-file-import"></i> Importar Productos
+                        </button>
+                    </div>
+                    <div id="importPreview"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Procesando...</p>
+            <div class="progress-bar">
+                <div id="progressBar" class="progress-fill" style="width: 0%"></div>
+            </div>
+            <p id="progressText">0%</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
