@@ -1,443 +1,2079 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grupo Chirica - Lista de Precios v3.1.0</title>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --light: #ecf0f1;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; padding: 2rem; border-radius: 12px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .logo { font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem; }
-        h2 { color: var(--primary); margin-bottom: 0.5rem; }
-        p.subtitle { color: #7f8c8d; margin-bottom: 2rem; font-size: 1.1rem; }
-        .login-options { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
-        .btn-login { padding: 1.2rem; border: none; border-radius: 10px; background: var(--secondary); color: white; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; }
-        .btn-login:hover { background: #2980b9; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .btn-login i { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
-        .form-group { margin-bottom: 1.5rem; text-align: left; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary); }
-        .form-group input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1.1rem; }
-        .form-actions { display: flex; gap: 1rem; }
-        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-        .btn-primary { background: var(--secondary); color: white; }
-        .btn-primary:hover { background: #2980b9; }
-        .btn-secondary { background: #95a5a6; color: white; }
-        .btn-secondary:hover { background: #7f8c8d; }
-        .error { color: var(--danger); margin-top: 1rem; font-weight: 600; }
-        #dashboard { display: none; }
-        .header { background: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .header h1 { color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .header h1 i { font-size: 1.8rem; }
-        .version { background: var(--secondary); color: white; padding: 3px 10px; border-radius: 15px; font-size: 0.8rem; margin-left: 10px; }
-        .weather { background: var(--success); color: white; padding: 3px 10px; border-radius: 15px; font-size: 0.8rem; margin-left: 15px; }
-        .user-badge { background: var(--warning); color: white; padding: 5px 15px; border-radius: 20px; font-weight: 600; }
-        .logout-btn { background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .sidebar { background: white; width: 250px; height: calc(100vh - 70px); position: fixed; top: 70px; left: 0; box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow-y: auto; }
-        .sidebar ul { list-style: none; padding: 1rem 0; }
-        .sidebar li { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.3s; }
-        .sidebar li:hover { background: var(--light); color: var(--secondary); }
-        .sidebar li:hover i { color: var(--secondary); }
-        .sidebar li.active { background: var(--secondary); color: white; font-weight: 600; }
-        .sidebar li.active i { color: white; }
-        .content { margin-left: 250px; padding: 2rem; background: var(--light); min-height: calc(100vh - 70px); }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .card h2 { color: var(--primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: var(--secondary); color: white; font-weight: 600; }
-        tr:hover td { background: #f8f9fa; }
-        .no-data { text-align: center; padding: 3rem; color: #95a5a6; font-style: italic; }
-        .action-btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; margin-right: 5px; font-size: 0.9rem; }
-        .edit-btn { background: var(--secondary); color: white; }
-        .delete-btn { background: var(--danger); color: white; }
-        .toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transform: translateX(400px); transition: transform 0.3s; z-index: 9999; }
-        .toast.show { transform: translateX(0); }
-        .toast.success { background: var(--success); }
-        .toast.error { background: var(--danger); }
-        .hidden { display: none !important; }
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; top: auto; left: auto; }
-            .content { margin-left: 0; }
-            .login-options { grid-template-columns: 1fr; }
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <div class="logo">
-                <i class="fas fa-store"></i>
-            </div>
-            <h2>GRUPO CHIRICA</h2>
-            <p class="subtitle">Sistema de Lista de Precios v3.1.0</p>
-            
-            <div class="login-options">
-                <button class="btn-login" onclick="setLoginMode('vendedor')">
-                    <i class="fas fa-user"></i> Vendedor
-                </button>
-                <button class="btn-login" onclick="setLoginMode('admin')">
-                    <i class="fas fa-user-shield"></i> Admin
-                </button>
-            </div>
-            
-            <div id="loginForm" class="hidden">
-                <h3 id="loginTitle">Acceso Vendedor</h3>
-                <div class="form-group">
-                    <label><i class="fas fa-key"></i> Contraseña</label>
-                    <input type="password" id="passwordInput" placeholder="Ingresa tu contraseña">
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-primary" onclick="login()">Entrar</button>
-                    <button class="btn btn-secondary" onclick="closeLogin()">Cancelar</button>
-                </div>
-                <p id="loginError" class="error hidden">Contraseña incorrecta</p>
-            </div>
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Precios - Grupo Chirica</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    html, body { box-sizing: border-box; height: 100%; }
+    body { box-sizing: border-box; }
+    .font-bebas { font-family: 'Bebas Neue', sans-serif; }
+    .font-inter { font-family: 'Inter', sans-serif; }
+    .text-stroke { 
+      -webkit-text-stroke: 2px white; 
+      paint-order: stroke fill;
+    }
+    .tire-o {
+      display: inline-block;
+      width: 0.8em;
+      height: 0.8em;
+      background: radial-gradient(circle at center, #1a1a1a 30%, #333 35%, #1a1a1a 40%, #2a2a2a 45%, #1a1a1a 100%);
+      border-radius: 50%;
+      border: 3px solid #dc2626;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+      vertical-align: middle;
+      margin: 0 -2px;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 4px; }
+    .price-card { transition: all 0.2s ease; }
+    .price-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    .loading-spinner { border: 3px solid #f3f4f6; border-top: 3px solid #dc2626; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .progress-bar {
+      width: 100%;
+      height: 24px;
+      background-color: #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #dc2626;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #dc2626, #ef4444);
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    body.dark-mode {
+      background-color: #1a1a1a;
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode #app {
+      background-color: #1a1a1a;
+    }
+    
+    body.dark-mode main {
+      background-color: #0f0f0f;
+    }
+    
+    body.dark-mode .dark-mode-header {
+      background: linear-gradient(to right, #0a0a0a, #1a1a1a, #0a0a0a) !important;
+    }
+    
+    body.dark-mode .price-card {
+      background-color: #2a2a2a;
+      border-color: #dc2626;
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode .price-card h3 {
+      color: #f0f0f0;
+    }
+    
+    body.dark-mode .price-card p {
+      color: #b0b0b0;
+    }
+    
+    body.dark-mode input,
+    body.dark-mode select,
+    body.dark-mode textarea {
+      background-color: #3a3a3a;
+      color: #e0e0e0;
+      border-color: #4a4a4a;
+    }
+    
+    body.dark-mode input:focus,
+    body.dark-mode select:focus,
+    body.dark-mode textarea:focus {
+      background-color: #3a3a3a;
+      color: #e0e0e0;
+      border-color: #dc2626;
+    }
+    
+    body.dark-mode .bg-white {
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode .bg-gray-50 {
+      background-color: #2a2a2a;
+    }
+    
+    body.dark-mode .bg-gray-100 {
+      background-color: #1a1a1a;
+    }
+    
+    body.dark-mode .bg-gray-200 {
+      background-color: #3a3a3a;
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode .text-gray-800 {
+      color: #f0f0f0;
+    }
+    
+    body.dark-mode .text-gray-700 {
+      color: #d0d0d0;
+    }
+    
+    body.dark-mode .text-gray-600 {
+      color: #b0b0b0;
+    }
+    
+    body.dark-mode .text-gray-500 {
+      color: #808080;
+    }
+    
+    body.dark-mode .text-gray-400 {
+      color: #606060;
+    }
+    
+    body.dark-mode .border-gray-200 {
+      border-color: #3a3a3a;
+    }
+    
+    body.dark-mode .border-gray-300 {
+      border-color: #4a4a4a;
+    }
+    
+    body.dark-mode .divide-y {
+      border-color: #3a3a3a;
+    }
+    
+    body.dark-mode .divide-y > * {
+      border-color: #3a3a3a;
+    }
+    
+    body.dark-mode .bg-blue-50 {
+      background-color: #1a2a3a;
+    }
+    
+    body.dark-mode .bg-green-50 {
+      background-color: #1a3a2a;
+    }
+    
+    body.dark-mode .bg-purple-50 {
+      background-color: #2a1a3a;
+    }
+    
+    body.dark-mode .bg-yellow-50 {
+      background-color: #3a3a1a;
+    }
+    
+    body.dark-mode .bg-red-100 {
+      background-color: #3a1a1a;
+    }
+    
+    body.dark-mode .bg-blue-100 {
+      background-color: #1a2a3a;
+    }
+    
+    body.dark-mode .bg-green-100 {
+      background-color: #1a3a2a;
+    }
+    
+    body.dark-mode .bg-purple-100 {
+      background-color: #2a1a3a;
+    }
+    
+    body.dark-mode .bg-blue-200 {
+      background-color: #2a3a4a;
+    }
+    
+    body.dark-mode table {
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode table tbody tr {
+      border-color: #3a3a3a;
+    }
+    
+    body.dark-mode table tbody tr:hover {
+      background-color: #3a3a3a;
+    }
+    
+    body.dark-mode .bg-black\/50 {
+      background-color: rgba(0, 0, 0, 0.75);
+    }
+    
+    body.dark-mode .fixed.inset-0 {
+      background-color: rgba(0, 0, 0, 0.75);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full font-inter bg-gray-100 text-gray-800">
+  <div id="app" class="h-full flex flex-col w-full overflow-hidden"><!-- Login Screen -->
+   <div id="login-screen" class="hidden h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
+    <div class="w-full max-w-sm animate-fade-in">
+     <div class="bg-white rounded-xl shadow-2xl p-8 text-center">
+      <h1 class="font-bebas text-4xl text-red-600 mb-2">GRUP<span class="tire-o"></span> CHIRICA</h1>
+      <p class="text-gray-500 text-sm mb-8">Sistema de Lista de Precios</p>
+      <div class="space-y-3"><button id="login-seller-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"> 👤 Acceso Vendedor </button> <button id="login-admin-btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"> 🔐 Acceso Administrador </button>
+      </div>
+     </div>
+    </div>
+   </div><!-- Header -->
+   <header class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-4 px-6 shadow-lg flex-shrink-0 dark-mode-header">
+    <div class="flex items-center justify-between">
+     <div class="flex items-center gap-4">
+      <div>
+       <h1 class="font-bebas text-4xl md:text-5xl text-red-600 text-stroke tracking-wider">GRUP<span class="tire-o"></span> CHIRICA</h1>
+       <div class="flex gap-2 items-center mt-1"><span class="text-gray-400 text-sm hidden md:block">Sistema de Lista de Precios</span> <span class="text-xs bg-gray-700 text-yellow-300 px-2 py-1 rounded font-mono">v3.1.0</span>
+       </div>
+      </div>
+     </div>
+     <div class="flex items-center gap-3"><button id="theme-toggle" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-sm font-medium transition-colors text-gray-900">☀️ Claro</button> <span id="user-role-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-700 text-gray-300">Vendedor</span> <button id="logout-btn" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-sm font-medium transition-colors">🚪 Cerrar Sesión</button>
+     </div>
+    </div>
+   </header><!-- Password Modal -->
+   <div id="password-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm animate-fade-in">
+     <h3 id="password-modal-title" class="text-xl font-bold text-gray-800 mb-4">Ingresa tu Contraseña</h3><input type="password" id="password-input" placeholder="Contraseña" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-red-500 focus:border-transparent">
+     <div class="flex gap-3"><button id="password-confirm-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium transition-colors">Entrar</button> <button id="password-cancel-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg font-medium transition-colors">Cancelar</button>
+     </div>
+     <p id="password-error" class="text-red-500 text-sm mt-2 hidden">Contraseña incorrecta</p>
+    </div>
+   </div><!-- Edit Product Modal -->
+   <div id="edit-product-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
+     <h3 class="text-xl font-bold text-gray-800 mb-4">Editar Producto</h3>
+     <form id="edit-product-form" class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Producto</label> <input type="text" id="edit-product-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label> <input type="text" id="edit-product-category" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">Precio Base Local ($)</label> <input type="number" id="edit-product-price-local" required min="0" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+       </div>
+       <div><label class="block text-sm font-medium text-gray-700 mb-2">Precio Base Divisas ($)</label> <input type="number" id="edit-product-price-divisas" required min="0" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+       </div>
+      </div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label> <textarea id="edit-product-description" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" rows="3"></textarea>
+      </div>
+      <div class="flex gap-3"><button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors">💾 Guardar Cambios</button> <button type="button" id="close-edit-modal-btn" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg font-medium transition-colors">Cancelar</button>
+      </div>
+     </form>
+    </div>
+   </div><!-- Progress Modal -->
+   <div id="progress-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md animate-fade-in">
+     <h3 id="progress-title" class="text-lg font-bold text-gray-800 mb-4">Procesando...</h3>
+     <div class="progress-bar mb-4">
+      <div class="progress-fill" id="progress-fill" style="width: 0%">
+       0%
+      </div>
+     </div>
+     <p id="progress-text" class="text-sm text-gray-600">Actualizando productos...</p>
+     <p id="progress-counter" class="text-xs text-gray-500 mt-2">0 / 0</p>
+    </div>
+   </div><!-- Main Content -->
+   <main class="flex-1 overflow-auto custom-scrollbar p-4 md:p-6 w-full"><!-- Search and Filter -->
+    <div class="mb-6">
+     <div class="flex flex-col md:flex-row gap-3"><input type="text" id="search-input" placeholder="🔍 Buscar productos..." class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"> <select id="category-filter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"> <option value="">Todas las categorías</option> </select>
+     </div>
+    </div><!-- Admin Panel -->
+    <div id="admin-panel" class="hidden mb-6 animate-fade-in">
+     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="flex border-b border-gray-200 overflow-x-auto bg-gray-50"><button class="admin-tab active px-6 py-3 font-medium text-gray-700 hover:text-red-600 border-b-2 border-red-600 transition-colors whitespace-nowrap" data-tab="manage">Gestionar Productos</button> <button class="admin-tab px-6 py-3 font-medium text-gray-700 hover:text-red-600 border-b-2 border-transparent transition-colors whitespace-nowrap" data-tab="add">Agregar Producto</button> <button class="admin-tab px-6 py-3 font-medium text-gray-700 hover:text-red-600 border-b-2 border-transparent transition-colors whitespace-nowrap" data-tab="methods">Métodos y IVA</button> <button class="admin-tab px-6 py-3 font-medium text-gray-700 hover:text-red-600 border-b-2 border-transparent transition-colors whitespace-nowrap" data-tab="adjustprices">Ajustar Precios</button> <button class="admin-tab px-6 py-3 font-medium text-gray-700 hover:text-red-600 border-b-2 border-transparent transition-colors whitespace-nowrap" data-tab="security">🔐 Seguridad</button> <button class="admin-tab px-6 py-3 font-medium text-gray-700 hover:text-red-600 border-b-2 border-transparent transition-colors whitespace-nowrap" data-tab="export">📊 Exportar/Importar</button>
+      </div><!-- Tab Content -->
+      <div class="p-6"><!-- Manage Tab -->
+       <div id="manage-tab" class="admin-tab-content">
+        <div class="mb-4"><input type="text" id="admin-search-input" placeholder="🔍 Buscar producto..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
         </div>
-    </div>
-
-    <!-- Dashboard (oculto al inicio) -->
-    <div id="dashboard">
-        <header class="header">
-            <div>
-                <h1><i class="fas fa-store"></i> GRUPO CHIRICA <span class="version">v3.1.0</span> <span class="weather">☀️ Claro</span></h1>
+        <div class="overflow-x-auto">
+         <table class="w-full text-sm">
+          <thead class="bg-gray-200 text-gray-800 font-bold sticky top-0">
+           <tr>
+            <th class="px-4 py-3 text-left">Nombre</th>
+            <th class="px-4 py-3 text-left">Categoría</th>
+            <th class="px-4 py-3 text-right">Precio Local</th>
+            <th class="px-4 py-3 text-right">Precio Divisas</th>
+            <th class="px-4 py-3 text-center">Acciones</th>
+           </tr>
+          </thead>
+          <tbody id="products-admin-list" class="divide-y divide-gray-200"><!-- Products will be loaded here -->
+          </tbody>
+         </table>
+        </div>
+       </div><!-- Add Product Tab -->
+       <div id="add-tab" class="admin-tab-content hidden">
+        <form id="add-product-form" class="space-y-4">
+         <div><label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Producto</label> <input type="text" id="product-name" required placeholder="Ej: Llanta 215/65 R15" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+         </div>
+         <div><label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label> <input type="text" id="product-category" required placeholder="Ej: Llantas, Aceites, Accesorios" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+         </div>
+         <div class="grid grid-cols-2 gap-4">
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Precio Base Local ($)</label> <input type="number" id="product-price-local" required min="0" step="0.01" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+          </div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-2">Precio Base Divisas ($)</label> <input type="number" id="product-price-divisas" required min="0" step="0.01" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+          </div>
+         </div>
+         <div><label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label> <textarea id="product-description" placeholder="Descripción del producto" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" rows="3"></textarea>
+         </div><button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium transition-colors">Agregar Producto</button>
+        </form>
+       </div><!-- Methods and IVA Tab -->
+       <div id="methods-tab" class="admin-tab-content hidden">
+        <div class="space-y-4">
+         <p class="text-gray-600 mb-4">Configura descuentos e IVA por categoría y método de pago</p><!-- Category Selector -->
+         <div class="bg-gray-100 p-4 rounded-lg border border-gray-300"><label class="block text-sm font-medium text-gray-700 mb-3">📁 Selecciona la Categoría</label> <select id="method-category-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"> <option value="">Cargando categorías...</option> </select>
+          <p class="text-xs text-gray-500 mt-2">Los cambios se aplicarán a TODOS los productos de esta categoría</p>
+         </div><!-- Transferencia -->
+         <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-300">
+          <h4 class="font-bold text-blue-800 mb-4 flex items-center gap-2">💳 Transferencia</h4>
+          <div class="grid grid-cols-3 gap-3">
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Descuento (%)</label> <input type="number" id="transf-discount" min="0" max="100" step="0.01" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            <p class="text-xs text-gray-600 mt-1">Ejm: 5 = 5% descuento</p>
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">IVA (%)</label> <input type="number" id="transf-iva" min="0" max="100" step="0.01" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            <p class="text-xs text-gray-600 mt-1">Ejm: 16 = 16% IVA</p>
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Aplicar IVA</label>
+            <div class="flex gap-2 mt-2"><button type="button" id="transf-iva-on" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-medium">✓ Sí</button> <button type="button" id="transf-iva-off" class="flex-1 px-3 py-2 bg-gray-400 text-white rounded-lg text-xs font-medium">✗ No</button>
             </div>
-            <div>
-                <span id="userRoleBadge" class="user-badge">Vendedor</span>
-                <button class="logout-btn" onclick="logout()"><i class="fas fa-door-open"></i> Cerrar Sesión</button>
+           </div>
+          </div><button type="button" id="save-transf-btn" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors">Guardar Configuración</button>
+         </div><!-- Cashea -->
+         <div class="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border-2 border-green-300">
+          <h4 class="font-bold text-green-800 mb-4 flex items-center gap-2">💰 Cashea</h4>
+          <div class="grid grid-cols-3 gap-3">
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Descuento (%)</label> <input type="number" id="cashea-discount" min="0" max="100" step="0.01" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+            <p class="text-xs text-gray-600 mt-1">Ejm: 3 = 3% descuento</p>
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">IVA (%)</label> <input type="number" id="cashea-iva" min="0" max="100" step="0.01" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+            <p class="text-xs text-gray-600 mt-1">Ejm: 16 = 16% IVA</p>
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Aplicar IVA</label>
+            <div class="flex gap-2 mt-2"><button type="button" id="cashea-iva-on" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-medium">✓ Sí</button> <button type="button" id="cashea-iva-off" class="flex-1 px-3 py-2 bg-gray-400 text-white rounded-lg text-xs font-medium">✗ No</button>
             </div>
-        </header>
-
-        <nav class="sidebar">
-            <ul>
-                <li class="active" onclick="showSection('dashboard')"><i class="fas fa-home"></i> Inicio</li>
-                <li onclick="showSection('products')"><i class="fas fa-boxes"></i> Productos</li>
-                <li id="adminMenu" class="hidden" onclick="showSection('add-product')"><i class="fas fa-plus-circle"></i> Agregar Producto</li>
-                <li id="adminMenu2" class="hidden" onclick="showSection('security')"><i class="fas fa-shield-alt"></i> Seguridad</li>
-            </ul>
-        </nav>
-
-        <main class="content">
-            <section id="section-dashboard" class="section">
-                <div class="card">
-                    <h2><i class="fas fa-home"></i> Bienvenido a Grupo Chirica</h2>
-                    <p>Este es un sistema de lista de precios funcional con las siguientes características:</p>
-                    <ul style="margin: 1.5rem 0; padding-left: 1.5rem;">
-                        <li>✅ Contraseñas preconfiguradas que funcionan</li>
-                        <li>✅ Base de datos interna (funciona sin internet)</li>
-                        <li>✅ Panel de administrador y vendedor</li>
-                        <li>✅ Gestión completa de productos</li>
-                        <li>✅ Totalmente gratuito y sin configuraciones</li>
-                    </ul>
-                    <div style="background: #e8f4fd; padding: 1.5rem; border-radius: 10px; margin-top: 1.5rem;">
-                        <h3 style="color: var(--secondary); margin-bottom: 10px;">🔐 Contraseñas por defecto:</h3>
-                        <p><strong>Administrador:</strong> <code>admin123</code></p>
-                        <p><strong>Vendedor:</strong> <code>vendedor123</code></p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="section-products" class="section hidden">
-                <div class="card">
-                    <h2><i class="fas fa-boxes"></i> Lista de Productos</h2>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Categoría</th>
-                                    <th>Precio Local</th>
-                                    <th>Precio Divisas</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="productsTableBody">
-                                <tr>
-                                    <td colspan="5" class="no-data">No hay productos aún. Agrega productos desde el panel de Administrador.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <section id="section-add-product" class="section hidden">
-                <div class="card">
-                    <h2><i class="fas fa-plus-circle"></i> Agregar Producto</h2>
-                    <div class="form-group">
-                        <label>Nombre del Producto</label>
-                        <input type="text" id="productName" placeholder="Ej: Arroz 1kg">
-                    </div>
-                    <div class="form-group">
-                        <label>Categoría</label>
-                        <input type="text" id="productCategory" placeholder="Ej: Alimentos">
-                    </div>
-                    <div class="form-group">
-                        <label>Precio Base Local ($)</label>
-                        <input type="number" id="priceLocal" step="0.01" placeholder="Ej: 500000">
-                    </div>
-                    <div class="form-group">
-                        <label>Precio Base Divisas ($)</label>
-                        <input type="number" id="priceDivisas" step="0.01" placeholder="Ej: 12.50">
-                    </div>
-                    <div class="form-group">
-                        <label>Descripción</label>
-                        <input type="text" id="productDescription" placeholder="Opcional">
-                    </div>
-                    <button class="btn btn-primary" onclick="addProduct()"><i class="fas fa-save"></i> Guardar Producto</button>
-                </div>
-            </section>
-
-            <section id="section-security" class="section hidden">
-                <div class="card">
-                    <h2><i class="fas fa-shield-alt"></i> Cambiar Contraseñas</h2>
-                    <div class="form-group">
-                        <label>Contraseña Admin Actual</label>
-                        <input type="password" id="currentAdminPass" value="admin123" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Nueva Contraseña Admin</label>
-                        <input type="password" id="newAdminPass" placeholder="Nueva contraseña">
-                    </div>
-                    <button class="btn btn-warning" onclick="changeAdminPassword()"><i class="fas fa-key"></i> Cambiar Contraseña Admin</button>
-                    
-                    <div style="margin-top: 2rem;">
-                        <div class="form-group">
-                            <label>Contraseña Vendedor Actual</label>
-                            <input type="password" id="currentSellerPass" value="vendedor123" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Nueva Contraseña Vendedor</label>
-                            <input type="password" id="newSellerPass" placeholder="Nueva contraseña">
-                        </div>
-                        <button class="btn btn-warning" onclick="changeSellerPassword()"><i class="fas fa-key"></i> Cambiar Contraseña Vendedor</button>
-                    </div>
-                </div>
-            </section>
-        </main>
+           </div>
+          </div><button type="button" id="save-cashea-btn" class="w-full mt-3 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors">Guardar Configuración</button>
+         </div><!-- Divisas -->
+         <div class="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-300">
+          <h4 class="font-bold text-purple-800 mb-4 flex items-center gap-2">🌍 Divisas</h4>
+          <div class="grid grid-cols-3 gap-3">
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Descuento (%)</label> <input type="number" id="divisas-discount" min="0" max="100" step="0.01" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+            <p class="text-xs text-gray-600 mt-1">Ejm: 0 = sin descuento</p>
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">IVA (%)</label> <input type="number" id="divisas-iva" min="0" max="100" step="0.01" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+            <p class="text-xs text-gray-600 mt-1">Ejm: 0 = sin IVA</p>
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Aplicar IVA</label>
+            <div class="flex gap-2 mt-2"><button type="button" id="divisas-iva-on" class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-medium">✓ Sí</button> <button type="button" id="divisas-iva-off" class="flex-1 px-3 py-2 bg-gray-400 text-white rounded-lg text-xs font-medium">✗ No</button>
+            </div>
+           </div>
+          </div><button type="button" id="save-divisas-btn" class="w-full mt-3 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-medium transition-colors">Guardar Configuración</button>
+         </div><!-- Método Personalizado -->
+         <div class="bg-gradient-to-r from-pink-50 to-pink-100 p-4 rounded-lg border-2 border-pink-300">
+          <h4 class="font-bold text-pink-800 mb-4 flex items-center gap-2">➕ Método Personalizado</h4>
+          <div class="grid grid-cols-4 gap-3 mb-3">
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label> <input type="text" id="metodo-custom-nombre" placeholder="Ej: Cripto, PayPal" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Descuento (%)</label> <input type="number" id="metodo-custom-discount" min="0" max="100" step="0.01" placeholder="0" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">IVA (%)</label> <input type="number" id="metodo-custom-iva" min="0" max="100" step="0.01" placeholder="0" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Aplicar IVA</label>
+            <div class="flex gap-2 mt-2"><button type="button" id="metodo-custom-iva-on" class="flex-1 px-2 py-2 bg-gray-400 text-white rounded-lg text-xs font-medium">✓ Sí</button> <button type="button" id="metodo-custom-iva-off" class="flex-1 px-2 py-2 bg-green-600 text-white rounded-lg text-xs font-medium">✗ No</button>
+            </div>
+           </div>
+          </div><button type="button" id="save-metodo-custom-btn" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded-lg font-medium transition-colors text-sm">Guardar Método Personalizado</button>
+          <p class="text-xs text-gray-600 mt-2">💡 Este método se guardará para futuros productos de esta categoría</p>
+         </div><!-- Preview -->
+         <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+          <h4 class="font-bold text-blue-800 mb-3">📊 Ejemplo con Precio Base: $100</h4>
+          <div id="method-preview" class="grid grid-cols-4 gap-3 text-sm"><!-- Preview will be calculated here -->
+          </div>
+         </div>
+        </div>
+       </div><!-- Adjust Prices Tab -->
+       <div id="adjustprices-tab" class="admin-tab-content hidden">
+        <div class="space-y-4">
+         <p class="text-gray-600 mb-4">Aplica aumentos o descuentos a los precios base (Local o Divisas)</p><!-- Adjustment Type Selection -->
+         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200"><label class="block text-sm font-medium text-gray-700 mb-3">Tipo de Ajuste</label>
+          <div class="flex gap-2 mb-4"><button type="button" id="adjust-individual-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">👤 Individual</button> <button type="button" id="adjust-category-btn" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-400">📁 Por Categoría</button> <button type="button" id="adjust-linear-btn" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-400">📊 A Todos</button>
+          </div><!-- Price Type Selection --> <label class="block text-sm font-medium text-gray-700 mb-3">Aplicar A</label>
+          <div class="flex gap-2 mb-4"><button type="button" id="adjust-local-btn" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">💳 Local</button> <button type="button" id="adjust-divisas-btn" class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-400">🌍 Divisas</button>
+          </div>
+          <div id="adjust-container" class="space-y-3"><!-- Adjustment options will render here -->
+          </div>
+         </div><!-- Preview -->
+         <div id="adjust-preview" class="bg-blue-50 p-4 rounded-lg border border-blue-200 hidden">
+          <h4 class="font-bold text-blue-800 mb-2">📊 Vista Previa</h4>
+          <div id="adjust-preview-content" class="text-sm text-blue-700 space-y-2"><!-- Preview will be rendered here -->
+          </div>
+         </div>
+        </div>
+       </div><!-- Security Tab -->
+       <div id="security-tab" class="admin-tab-content hidden">
+        <div class="space-y-6"><!-- Change Admin Password -->
+         <div class="bg-red-50 p-4 rounded-lg border-2 border-red-300">
+          <h4 class="font-bold text-red-800 mb-4 flex items-center gap-2">🔐 Cambiar Contraseña Admin</h4>
+          <div class="space-y-3">
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Contraseña Admin Actual</label> <input type="password" id="current-admin-password" placeholder="Contraseña actual" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Nueva Contraseña Admin</label> <input type="password" id="new-admin-password" placeholder="Nueva contraseña" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Confirmar Nueva Contraseña</label> <input type="password" id="confirm-admin-password" placeholder="Confirmar contraseña" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+           </div><button type="button" id="save-admin-password-btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium transition-colors">Cambiar Contraseña Admin</button>
+           <p id="admin-password-message" class="text-sm mt-2 hidden"></p>
+          </div>
+         </div><!-- Change Seller Password -->
+         <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-300">
+          <h4 class="font-bold text-blue-800 mb-4 flex items-center gap-2">👤 Cambiar Contraseña Vendedor</h4>
+          <div class="space-y-3">
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Contraseña Admin (para verificación)</label> <input type="password" id="admin-verify-password" placeholder="Tu contraseña admin" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Nueva Contraseña Vendedor</label> <input type="password" id="new-seller-password" placeholder="Nueva contraseña vendedor" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+           </div>
+           <div><label class="block text-sm font-medium text-gray-700 mb-2">Confirmar Nueva Contraseña</label> <input type="password" id="confirm-seller-password" placeholder="Confirmar contraseña" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+           </div><button type="button" id="save-seller-password-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors">Cambiar Contraseña Vendedor</button>
+           <p id="seller-password-message" class="text-sm mt-2 hidden"></p>
+          </div>
+         </div><!-- Current Passwords Display -->
+         <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300">
+          <h4 class="font-bold text-yellow-800 mb-3">📋 Contraseñas Actuales</h4>
+          <div class="bg-white p-3 rounded border border-yellow-200 space-y-2">
+           <p class="text-sm"><span class="font-semibold">Admin:</span> <span id="display-admin-pwd" class="font-mono text-gray-700">admin123</span></p>
+           <p class="text-sm"><span class="font-semibold">Vendedor:</span> <span id="display-seller-pwd" class="font-mono text-gray-700">vendedor123</span></p>
+          </div>
+          <p class="text-xs text-gray-600 mt-2">Estas contraseñas se pueden compartir con los vendedores para acceder a la lista de precios</p>
+         </div>
+        </div>
+       </div><!-- Export Tab -->
+       <div id="export-tab" class="admin-tab-content hidden">
+        <div class="space-y-4">
+         <div>
+          <p class="text-gray-600 mb-4">📤 Exporta todos los productos a CSV o JSON para usar en Excel o análisis externo.</p>
+          <div class="space-y-2"><button id="export-csv-btn" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"> 📥 Descargar CSV </button> <button id="export-json-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"> 📥 Descargar JSON </button>
+          </div>
+         </div>
+         <div class="border-t border-gray-300 pt-4">
+          <p class="text-gray-600 mb-4">📤 Importa productos desde un archivo CSV o JSON previamente exportado.</p>
+          <div class="space-y-2"><label class="block"> <span class="text-sm font-medium text-gray-700 mb-2 block">Selecciona archivo (CSV o JSON)</span> <input type="file" id="import-file" accept=".csv,.json" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"> </label> <button type="button" id="import-file-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"> ⬆️ Importar Productos </button>
+          </div>
+          <p id="import-status" class="text-sm mt-2 text-gray-600"></p>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Products Grid -->
+    <div id="products-list" class="grid grid-cols-1 gap-3"><!-- Products will be loaded here -->
+    </div><!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-12">
+     <p class="text-gray-500 text-lg">No hay productos disponibles</p>
+     <p class="text-gray-400 text-sm mt-2">Agrega productos desde el panel administrador</p>
     </div>
+   </main>
+  </div>
+  <script>
+    // Configuration
+    const ADMIN_PASSWORD = "admin123";
+    const SELLER_PASSWORD = "vendedor123";
+    let isAdmin = false;
+    let isLoggedIn = false;
+    let adminPassword = ADMIN_PASSWORD;
+    let sellerPassword = SELLER_PASSWORD;
+    let allProducts = [];
+    let filteredProducts = [];
+    let currentAdjustMode = 'individual';
+    let currentAdjustPriceType = 'local';
+    let pendingLoginMode = null;
+    let isProcessing = false;
+    let processingAbort = false;
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast"></div>
+    // Progress modal functions
+    function showProgressModal(title = "Procesando...") {
+      document.getElementById("progress-modal").classList.remove("hidden");
+      document.getElementById("progress-title").textContent = title;
+      document.getElementById("progress-fill").style.width = "0%";
+      document.getElementById("progress-fill").textContent = "0%";
+      document.getElementById("progress-text").textContent = "Iniciando...";
+      document.getElementById("progress-counter").textContent = "0 / 0";
+      isProcessing = true;
+      processingAbort = false;
+    }
 
-    <script>
-        // ========== CONFIGURACIÓN INICIAL ==========
-        const PASSWORDS = {
-            admin: 'admin123',
-            vendedor: 'vendedor123'
+    function updateProgress(current, total, text = "Procesando...") {
+      const percentage = Math.round((current / total) * 100);
+      document.getElementById("progress-fill").style.width = percentage + "%";
+      document.getElementById("progress-fill").textContent = percentage + "%";
+      document.getElementById("progress-text").textContent = text;
+      document.getElementById("progress-counter").textContent = `${current} / ${total}`;
+    }
+
+    function hideProgressModal() {
+      document.getElementById("progress-modal").classList.add("hidden");
+      isProcessing = false;
+      processingAbort = false;
+    }
+
+    function closeProgressModal() {
+      setTimeout(() => {
+        hideProgressModal();
+      }, 800);
+    }
+
+    // Check session on load
+    function checkExistingSession() {
+      const session = localStorage.getItem("userSession");
+      if (session) {
+        const sessionData = JSON.parse(session);
+        isLoggedIn = true;
+        isAdmin = sessionData.isAdmin || false;
+        showMainApp();
+        updateUserBadge();
+      } else {
+        showLoginScreen();
+      }
+    }
+
+    function showLoginScreen() {
+      document.getElementById("login-screen").classList.remove("hidden");
+      document.getElementById("app").style.display = "flex";
+    }
+
+    function showMainApp() {
+      document.getElementById("login-screen").classList.add("hidden");
+      if (isAdmin) {
+        document.getElementById("admin-panel").classList.remove("hidden");
+        renderAdminProducts();
+      } else {
+        document.getElementById("admin-panel").classList.add("hidden");
+      }
+    }
+
+    function saveSession(admin = false) {
+      const session = {
+        isAdmin: admin,
+        timestamp: new Date().getTime()
+      };
+      localStorage.setItem("userSession", JSON.stringify(session));
+    }
+
+    function clearSession() {
+      localStorage.removeItem("userSession");
+      isLoggedIn = false;
+      isAdmin = false;
+      showLoginScreen();
+    }
+
+    // Login handlers
+    document.getElementById("login-seller-btn").addEventListener("click", () => {
+      pendingLoginMode = "seller";
+      document.getElementById("password-modal-title").textContent = "Acceso Vendedor";
+      document.getElementById("password-modal").classList.remove("hidden");
+      document.getElementById("password-input").value = "";
+      document.getElementById("password-error").classList.add("hidden");
+    });
+
+    document.getElementById("login-admin-btn").addEventListener("click", () => {
+      pendingLoginMode = "admin";
+      document.getElementById("password-modal-title").textContent = "Acceso Administrador";
+      document.getElementById("password-modal").classList.remove("hidden");
+      document.getElementById("password-input").value = "";
+      document.getElementById("password-error").classList.add("hidden");
+    });
+
+    document.getElementById("password-confirm-btn").addEventListener("click", () => {
+      const password = document.getElementById("password-input").value;
+      let isCorrect = false;
+
+      if (pendingLoginMode === "seller" && password === sellerPassword) {
+        isCorrect = true;
+        isAdmin = false;
+      } else if (pendingLoginMode === "admin" && password === adminPassword) {
+        isCorrect = true;
+        isAdmin = true;
+      }
+
+      if (isCorrect) {
+        isLoggedIn = true;
+        saveSession(isAdmin);
+        document.getElementById("password-modal").classList.add("hidden");
+        showMainApp();
+        updateUserBadge();
+      } else {
+        document.getElementById("password-error").classList.remove("hidden");
+      }
+    });
+
+    document.getElementById("password-cancel-btn").addEventListener("click", () => {
+      document.getElementById("password-modal").classList.add("hidden");
+      document.getElementById("password-input").value = "";
+      document.getElementById("password-error").classList.add("hidden");
+      pendingLoginMode = null;
+    });
+
+    // Logout
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      clearSession();
+    });
+
+    function updateUserBadge() {
+      const badge = document.getElementById("user-role-badge");
+      if (isAdmin) {
+        badge.textContent = "Administrador";
+        badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-red-700 text-white";
+      } else {
+        badge.textContent = "Vendedor";
+        badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-blue-700 text-white";
+      }
+    }
+
+    // Element SDK Configuration
+    const defaultConfig = {
+      admin_password: ADMIN_PASSWORD
+    };
+
+    let config = { ...defaultConfig };
+
+    const elementSdkConfig = {
+      defaultConfig,
+      onConfigChange: async (newConfig) => {
+        config = { ...newConfig };
+      },
+      mapToCapabilities: () => ({
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      }),
+      mapToEditPanelValues: () => new Map([
+        ["admin_password", config.admin_password || defaultConfig.admin_password]
+      ])
+    };
+
+    if (window.elementSdk) {
+      window.elementSdk.init(elementSdkConfig);
+    }
+
+    // Data Handler for Data SDK
+    const dataHandler = {
+      onDataChanged(data) {
+        allProducts = data || [];
+        filterAndRenderProducts();
+        updateCategories();
+      }
+    };
+
+    // Initialize Data SDK
+    async function initDataSDK() {
+      if (window.dataSdk) {
+        const result = await window.dataSdk.init(dataHandler);
+        if (!result.isOk) {
+          console.error("Error initializing Data SDK:", result.error);
+        }
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkExistingSession();
+      initDataSDK();
+    });
+
+    // Theme Toggle
+    const themeToggle = document.getElementById("theme-toggle");
+    const savedTheme = localStorage.getItem("theme") || "light";
+    
+    if (savedTheme === "dark") {
+      document.body.classList.add("dark-mode");
+      themeToggle.textContent = "🌙 Oscuro";
+      themeToggle.className = "px-4 py-2 bg-gray-700 hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors text-gray-100";
+    }
+    
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      const isDarkMode = document.body.classList.contains("dark-mode");
+      localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+      
+      if (isDarkMode) {
+        themeToggle.textContent = "🌙 Oscuro";
+        themeToggle.className = "px-4 py-2 bg-gray-700 hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors text-gray-100";
+      } else {
+        themeToggle.textContent = "☀️ Claro";
+        themeToggle.className = "px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-sm font-medium transition-colors text-gray-900";
+      }
+    });
+
+    // Helper function to check if IVA is ON
+    function isIVAOn(prefix) {
+      const onBtn = document.getElementById(`${prefix}-iva-on`);
+      return onBtn.className.includes("bg-green-600");
+    }
+
+    // Round price to nearest 5
+    function roundToNearest5(price) {
+      return Math.round(price / 5) * 5;
+    }
+
+    // Add Product Form
+    document.getElementById("add-product-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      if (!window.dataSdk) {
+        alert("Error: Data SDK no disponible");
+        return;
+      }
+
+      if (allProducts.length >= 999) {
+        alert("⚠️ Límite máximo de 999 productos alcanzado");
+        return;
+      }
+
+      const btn = e.target.querySelector("button[type='submit']");
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'Guardando...';
+
+      const categoria = document.getElementById("product-category").value.trim();
+      const categoryDiscounts = getCategoryDiscounts(categoria);
+
+      const newProduct = {
+        nombre: document.getElementById("product-name").value.trim(),
+        categoria: categoria,
+        precio_local: roundToNearest5(parseFloat(document.getElementById("product-price-local").value) || 0),
+        precio_divisas: roundToNearest5(parseFloat(document.getElementById("product-price-divisas").value) || 0),
+        descripcion: document.getElementById("product-description").value.trim() || "",
+        transferencia_descuento: categoryDiscounts.transferencia_descuento,
+        transferencia_iva: categoryDiscounts.transferencia_iva,
+        transferencia_aplica_iva: categoryDiscounts.transferencia_aplica_iva,
+        cashea_descuento: categoryDiscounts.cashea_descuento,
+        cashea_iva: categoryDiscounts.cashea_iva,
+        cashea_aplica_iva: categoryDiscounts.cashea_aplica_iva,
+        divisas_descuento: categoryDiscounts.divisas_descuento,
+        divisas_iva: categoryDiscounts.divisas_iva,
+        divisas_aplica_iva: categoryDiscounts.divisas_aplica_iva,
+        metodo_personalizado_nombre: categoryDiscounts.metodo_personalizado_nombre,
+        metodo_personalizado_descuento: categoryDiscounts.metodo_personalizado_descuento,
+        metodo_personalizado_iva: categoryDiscounts.metodo_personalizado_iva,
+        metodo_personalizado_aplica_iva: categoryDiscounts.metodo_personalizado_aplica_iva
+      };
+
+      try {
+        const result = await window.dataSdk.create(newProduct);
+        
+        if (result.isOk) {
+          e.target.reset();
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          alert("✅ Producto agregado correctamente");
+        } else {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          alert("Error: " + (result.error?.message || "Error desconocido"));
+        }
+      } catch (error) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        alert("Error: " + error.message);
+      }
+    });
+
+    function getCategoryDiscounts(category) {
+      const productsInCategory = allProducts.filter(p => p.categoria === category);
+      if (productsInCategory.length > 0) {
+        const sample = productsInCategory[0];
+        return {
+          transferencia_descuento: Number(sample.transferencia_descuento) || 0,
+          transferencia_iva: Number(sample.transferencia_iva) || 16,
+          transferencia_aplica_iva: Number(sample.transferencia_aplica_iva) || 1,
+          cashea_descuento: Number(sample.cashea_descuento) || 0,
+          cashea_iva: Number(sample.cashea_iva) || 16,
+          cashea_aplica_iva: Number(sample.cashea_aplica_iva) || 1,
+          divisas_descuento: Number(sample.divisas_descuento) || 0,
+          divisas_iva: Number(sample.divisas_iva) || 0,
+          divisas_aplica_iva: Number(sample.divisas_aplica_iva) || 0,
+          metodo_personalizado_nombre: String(sample.metodo_personalizado_nombre) || "",
+          metodo_personalizado_descuento: Number(sample.metodo_personalizado_descuento) || 0,
+          metodo_personalizado_iva: Number(sample.metodo_personalizado_iva) || 0,
+          metodo_personalizado_aplica_iva: Number(sample.metodo_personalizado_aplica_iva) || 0
         };
+      }
+      return {
+        transferencia_descuento: 0,
+        transferencia_iva: 16,
+        transferencia_aplica_iva: 1,
+        cashea_descuento: 0,
+        cashea_iva: 16,
+        cashea_aplica_iva: 1,
+        divisas_descuento: 0,
+        divisas_iva: 0,
+        divisas_aplica_iva: 0,
+        metodo_personalizado_nombre: "",
+        metodo_personalizado_descuento: 0,
+        metodo_personalizado_iva: 0,
+        metodo_personalizado_aplica_iva: 0
+      };
+    }
 
-        let currentUser = null;
-        let currentRole = null;
-        let products = JSON.parse(localStorage.getItem('gc_products')) || [];
+    // Update products by category - COMPLETAMENTE REESCRITO
+    async function updateProductsByCategory(category, updates) {
+      if (!window.dataSdk || isProcessing) return { success: 0, total: 0 };
+      
+      const categoryProducts = allProducts.filter(p => p.categoria === category);
+      if (categoryProducts.length === 0) {
+        return { success: 0, total: 0 };
+      }
 
-        // ========== FUNCIONES DE LOGIN ==========
-        function setLoginMode(role) {
-            document.getElementById('loginTitle').textContent = role === 'admin' ? 'Acceso Administrador' : 'Acceso Vendedor';
-            document.getElementById('passwordInput').dataset.role = role;
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('loginError').classList.add('hidden');
+      showProgressModal("Actualizando: " + category);
+      let successCount = 0;
+      const total = categoryProducts.length;
+      const updateQueue = [...categoryProducts];
+
+      while (updateQueue.length > 0 && !processingAbort) {
+        const product = updateQueue.shift();
+        updateProgress(total - updateQueue.length, total, `${product.nombre}`);
+
+        // Validaciones críticas
+        if (!product || !product.__backendId) {
+          console.warn("Producto inválido:", product);
+          continue;
         }
 
-        function login() {
-            const password = document.getElementById('passwordInput').value;
-            const role = document.getElementById('passwordInput').dataset.role || 'vendedor';
-            
-            if (!password) {
-                showToast('Por favor ingresa una contraseña', 'error');
-                return;
-            }
+        try {
+          const updatedProduct = {
+            __backendId: product.__backendId,
+            nombre: String(product.nombre || ""),
+            categoria: String(product.categoria || ""),
+            precio_local: Number(product.precio_local) || 0,
+            precio_divisas: Number(product.precio_divisas) || 0,
+            descripcion: String(product.descripcion || ""),
+            transferencia_descuento: Number(updates.transferencia_descuento !== undefined ? updates.transferencia_descuento : (product.transferencia_descuento || 0)),
+            transferencia_iva: Number(updates.transferencia_iva !== undefined ? updates.transferencia_iva : (product.transferencia_iva || 16)),
+            transferencia_aplica_iva: Number(updates.transferencia_aplica_iva !== undefined ? updates.transferencia_aplica_iva : (product.transferencia_aplica_iva || 0)),
+            cashea_descuento: Number(updates.cashea_descuento !== undefined ? updates.cashea_descuento : (product.cashea_descuento || 0)),
+            cashea_iva: Number(updates.cashea_iva !== undefined ? updates.cashea_iva : (product.cashea_iva || 16)),
+            cashea_aplica_iva: Number(updates.cashea_aplica_iva !== undefined ? updates.cashea_aplica_iva : (product.cashea_aplica_iva || 0)),
+            divisas_descuento: Number(updates.divisas_descuento !== undefined ? updates.divisas_descuento : (product.divisas_descuento || 0)),
+            divisas_iva: Number(updates.divisas_iva !== undefined ? updates.divisas_iva : (product.divisas_iva || 0)),
+            divisas_aplica_iva: Number(updates.divisas_aplica_iva !== undefined ? updates.divisas_aplica_iva : (product.divisas_aplica_iva || 0)),
+            metodo_personalizado_nombre: String(product.metodo_personalizado_nombre || ""),
+            metodo_personalizado_descuento: Number(product.metodo_personalizado_descuento || 0),
+            metodo_personalizado_iva: Number(product.metodo_personalizado_iva || 0),
+            metodo_personalizado_aplica_iva: Number(product.metodo_personalizado_aplica_iva || 0)
+          };
 
-            if (role === 'admin' && password === PASSWORDS.admin) {
-                loginSuccess('admin');
-            } else if (role === 'vendedor' && password === PASSWORDS.vendedor) {
-                loginSuccess('vendedor');
+          const result = await window.dataSdk.update(updatedProduct);
+          
+          if (result.isOk) {
+            successCount++;
+            // Esperar confirmación antes de siguiente
+            await new Promise(resolve => setTimeout(resolve, 120));
+          } else {
+            console.error(`Error: ${product.nombre}`, result.error);
+            // Reintentar una vez
+            await new Promise(resolve => setTimeout(resolve, 200));
+            const retryResult = await window.dataSdk.update(updatedProduct);
+            if (retryResult.isOk) {
+              successCount++;
+            }
+          }
+        } catch (error) {
+          console.error("Excepción:", error);
+          // Reintentar
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+
+      closeProgressModal();
+      return { success: successCount, total: total };
+    }
+
+    // Save configuration handlers
+    document.getElementById("save-transf-btn").addEventListener("click", async () => {
+      const selectedCategory = document.getElementById("method-category-select").value;
+      
+      if (!selectedCategory) {
+        alert("⚠️ Selecciona una categoría primero");
+        return;
+      }
+
+      if (isProcessing) return;
+
+      const discount = Number(document.getElementById("transf-discount").value) || 0;
+      const iva = Number(document.getElementById("transf-iva").value) || 0;
+      const aplicaIva = isIVAOn('transf') ? 1 : 0;
+
+      const btn = document.getElementById("save-transf-btn");
+      btn.disabled = true;
+
+      const result = await updateProductsByCategory(selectedCategory, {
+        transferencia_descuento: discount,
+        transferencia_iva: iva,
+        transferencia_aplica_iva: aplicaIva
+      });
+
+      btn.disabled = false;
+
+      if (result.success === result.total) {
+        updateMethodPreview();
+        alert(`✅ Transferencia: ${result.success}/${result.total} productos actualizados`);
+      } else if (result.success > 0) {
+        alert(`⚠️ Solo ${result.success}/${result.total} productos se actualizaron`);
+      } else {
+        alert(`❌ Error: No se pudo actualizar ningún producto`);
+      }
+    });
+
+    document.getElementById("save-cashea-btn").addEventListener("click", async () => {
+      const selectedCategory = document.getElementById("method-category-select").value;
+      
+      if (!selectedCategory) {
+        alert("⚠️ Selecciona una categoría primero");
+        return;
+      }
+
+      if (isProcessing) return;
+
+      const discount = Number(document.getElementById("cashea-discount").value) || 0;
+      const iva = Number(document.getElementById("cashea-iva").value) || 0;
+      const aplicaIva = isIVAOn('cashea') ? 1 : 0;
+
+      const btn = document.getElementById("save-cashea-btn");
+      btn.disabled = true;
+
+      const result = await updateProductsByCategory(selectedCategory, {
+        cashea_descuento: discount,
+        cashea_iva: iva,
+        cashea_aplica_iva: aplicaIva
+      });
+
+      btn.disabled = false;
+
+      if (result.success === result.total) {
+        updateMethodPreview();
+        alert(`✅ Cashea: ${result.success}/${result.total} productos actualizados`);
+      } else if (result.success > 0) {
+        alert(`⚠️ Solo ${result.success}/${result.total} productos se actualizaron`);
+      } else {
+        alert(`❌ Error: No se pudo actualizar ningún producto`);
+      }
+    });
+
+    document.getElementById("save-divisas-btn").addEventListener("click", async () => {
+      const selectedCategory = document.getElementById("method-category-select").value;
+      
+      if (!selectedCategory) {
+        alert("⚠️ Selecciona una categoría primero");
+        return;
+      }
+
+      if (isProcessing) return;
+
+      const discount = Number(document.getElementById("divisas-discount").value) || 0;
+      const iva = Number(document.getElementById("divisas-iva").value) || 0;
+      const aplicaIva = isIVAOn('divisas') ? 1 : 0;
+
+      const btn = document.getElementById("save-divisas-btn");
+      btn.disabled = true;
+
+      const result = await updateProductsByCategory(selectedCategory, {
+        divisas_descuento: discount,
+        divisas_iva: iva,
+        divisas_aplica_iva: aplicaIva
+      });
+
+      btn.disabled = false;
+
+      if (result.success === result.total) {
+        updateMethodPreview();
+        alert(`✅ Divisas: ${result.success}/${result.total} productos actualizados`);
+      } else if (result.success > 0) {
+        alert(`⚠️ Solo ${result.success}/${result.total} productos se actualizaron`);
+      } else {
+        alert(`❌ Error: No se pudo actualizar ningún producto`);
+      }
+    });
+
+    // Método personalizado
+    document.getElementById("save-metodo-custom-btn").addEventListener("click", async () => {
+      const selectedCategory = document.getElementById("method-category-select").value;
+      
+      if (!selectedCategory) {
+        alert("⚠️ Selecciona una categoría primero");
+        return;
+      }
+
+      if (isProcessing) return;
+
+      const nombre = document.getElementById("metodo-custom-nombre").value.trim();
+      if (!nombre) {
+        alert("⚠️ Ingresa el nombre del método personalizado");
+        return;
+      }
+
+      const discount = Number(document.getElementById("metodo-custom-discount").value) || 0;
+      const iva = Number(document.getElementById("metodo-custom-iva").value) || 0;
+      const aplicaIva = isIVAOn('metodo-custom') ? 1 : 0;
+
+      const btn = document.getElementById("save-metodo-custom-btn");
+      btn.disabled = true;
+
+      const result = await updateProductsByCategory(selectedCategory, {
+        metodo_personalizado_nombre: nombre,
+        metodo_personalizado_descuento: discount,
+        metodo_personalizado_iva: iva,
+        metodo_personalizado_aplica_iva: aplicaIva
+      });
+
+      btn.disabled = false;
+
+      if (result.success === result.total) {
+        updateMethodPreview();
+        alert(`✅ Método personalizado (${nombre}): ${result.success}/${result.total} productos actualizados`);
+        document.getElementById("metodo-custom-nombre").value = "";
+      } else if (result.success > 0) {
+        alert(`⚠️ Solo ${result.success}/${result.total} productos se actualizaron`);
+      } else {
+        alert(`❌ Error: No se pudo actualizar ningún producto`);
+      }
+    });
+
+    // Admin Tab Switching
+    document.querySelectorAll(".admin-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        const tabName = tab.dataset.tab;
+        document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active", "border-red-600"));
+        document.querySelectorAll(".admin-tab").forEach(t => t.classList.add("border-transparent"));
+        tab.classList.add("active", "border-red-600");
+        
+        document.querySelectorAll(".admin-tab-content").forEach(content => content.classList.add("hidden"));
+        document.getElementById(tabName + "-tab").classList.remove("hidden");
+
+        if (tabName === "methods") {
+          loadMethodCategories();
+          loadMethodConfigs();
+          updateMethodPreview();
+        }
+        if (tabName === "adjustprices") {
+          renderAdjustOptions();
+        }
+      });
+    });
+
+    function loadMethodCategories() {
+      const categories = [...new Set(allProducts.map(p => p.categoria))].sort();
+      const select = document.getElementById("method-category-select");
+      
+      if (select) {
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">-- Selecciona una categoría --</option>';
+        
+        categories.forEach(cat => {
+          const option = document.createElement("option");
+          option.value = cat;
+          option.textContent = cat;
+          select.appendChild(option);
+        });
+
+        select.value = currentValue;
+      }
+    }
+
+    function updateIVAButtons(prefix, isOn) {
+      const onBtn = document.getElementById(`${prefix}-iva-on`);
+      const offBtn = document.getElementById(`${prefix}-iva-off`);
+      
+      if (isOn) {
+        onBtn.className = "flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-medium";
+        offBtn.className = "flex-1 px-3 py-2 bg-gray-400 text-white rounded-lg text-xs font-medium";
+      } else {
+        onBtn.className = "flex-1 px-3 py-2 bg-gray-400 text-white rounded-lg text-xs font-medium";
+        offBtn.className = "flex-1 px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-medium";
+      }
+    }
+
+    function loadMethodConfigs() {
+      const selectedCategory = document.getElementById("method-category-select").value;
+      
+      if (!selectedCategory) {
+        document.getElementById("transf-discount").value = 0;
+        document.getElementById("transf-iva").value = 16;
+        updateIVAButtons('transf', false);
+
+        document.getElementById("cashea-discount").value = 0;
+        document.getElementById("cashea-iva").value = 16;
+        updateIVAButtons('cashea', false);
+
+        document.getElementById("divisas-discount").value = 0;
+        document.getElementById("divisas-iva").value = 0;
+        updateIVAButtons('divisas', false);
+
+        document.getElementById("metodo-custom-nombre").value = "";
+        document.getElementById("metodo-custom-discount").value = 0;
+        document.getElementById("metodo-custom-iva").value = 0;
+        updateIVAButtons('metodo-custom', false);
+        return;
+      }
+
+      const categoryProducts = allProducts.filter(p => p.categoria === selectedCategory);
+      if (categoryProducts.length > 0) {
+        const sample = categoryProducts[0];
+        
+        document.getElementById("transf-discount").value = Number(sample.transferencia_descuento) || 0;
+        document.getElementById("transf-iva").value = Number(sample.transferencia_iva) || 16;
+        updateIVAButtons('transf', Boolean(sample.transferencia_aplica_iva));
+
+        document.getElementById("cashea-discount").value = Number(sample.cashea_descuento) || 0;
+        document.getElementById("cashea-iva").value = Number(sample.cashea_iva) || 16;
+        updateIVAButtons('cashea', Boolean(sample.cashea_aplica_iva));
+
+        document.getElementById("divisas-discount").value = Number(sample.divisas_descuento) || 0;
+        document.getElementById("divisas-iva").value = Number(sample.divisas_iva) || 0;
+        updateIVAButtons('divisas', Boolean(sample.divisas_aplica_iva));
+
+        document.getElementById("metodo-custom-nombre").value = String(sample.metodo_personalizado_nombre || "");
+        document.getElementById("metodo-custom-discount").value = Number(sample.metodo_personalizado_descuento) || 0;
+        document.getElementById("metodo-custom-iva").value = Number(sample.metodo_personalizado_iva) || 0;
+        updateIVAButtons('metodo-custom', Boolean(sample.metodo_personalizado_aplica_iva));
+      }
+    }
+
+    document.getElementById("method-category-select").addEventListener("change", () => {
+      loadMethodConfigs();
+      updateMethodPreview();
+    });
+
+    document.getElementById("transf-iva-on").addEventListener("click", () => {
+      updateIVAButtons('transf', true);
+      updateMethodPreview();
+    });
+    document.getElementById("transf-iva-off").addEventListener("click", () => {
+      updateIVAButtons('transf', false);
+      updateMethodPreview();
+    });
+
+    document.getElementById("cashea-iva-on").addEventListener("click", () => {
+      updateIVAButtons('cashea', true);
+      updateMethodPreview();
+    });
+    document.getElementById("cashea-iva-off").addEventListener("click", () => {
+      updateIVAButtons('cashea', false);
+      updateMethodPreview();
+    });
+
+    document.getElementById("divisas-iva-on").addEventListener("click", () => {
+      updateIVAButtons('divisas', true);
+      updateMethodPreview();
+    });
+    document.getElementById("divisas-iva-off").addEventListener("click", () => {
+      updateIVAButtons('divisas', false);
+      updateMethodPreview();
+    });
+
+    document.getElementById("metodo-custom-iva-on").addEventListener("click", () => {
+      updateIVAButtons('metodo-custom', true);
+      updateMethodPreview();
+    });
+    document.getElementById("metodo-custom-iva-off").addEventListener("click", () => {
+      updateIVAButtons('metodo-custom', false);
+      updateMethodPreview();
+    });
+
+    function updateMethodPreview() {
+      const basePrice = 100;
+      const preview = document.getElementById("method-preview");
+      
+      const transfDiscount = parseFloat(document.getElementById("transf-discount").value) || 0;
+      const transfIva = parseFloat(document.getElementById("transf-iva").value) || 0;
+      const transfAplicaIva = isIVAOn('transf');
+
+      const casheaDiscount = parseFloat(document.getElementById("cashea-discount").value) || 0;
+      const casheaIva = parseFloat(document.getElementById("cashea-iva").value) || 0;
+      const casheaAplicaIva = isIVAOn('cashea');
+
+      const divisasDiscount = parseFloat(document.getElementById("divisas-discount").value) || 0;
+      const divisasIva = parseFloat(document.getElementById("divisas-iva").value) || 0;
+      const divisasAplicaIva = isIVAOn('divisas');
+
+      const customNombre = document.getElementById("metodo-custom-nombre").value.trim() || "Personalizado";
+      const customDiscount = parseFloat(document.getElementById("metodo-custom-discount").value) || 0;
+      const customIva = parseFloat(document.getElementById("metodo-custom-iva").value) || 0;
+      const customAplicaIva = isIVAOn('metodo-custom');
+
+      const transfPriceNoIVA = basePrice * (1 - transfDiscount / 100);
+      const transfPrice = transfAplicaIva ? transfPriceNoIVA * (1 + transfIva / 100) : transfPriceNoIVA;
+
+      const casheaPriceNoIVA = basePrice * (1 - casheaDiscount / 100);
+      const casheaPrice = casheaAplicaIva ? casheaPriceNoIVA * (1 + casheaIva / 100) : casheaPriceNoIVA;
+
+      const divisasPriceNoIVA = basePrice * (1 - divisasDiscount / 100);
+      const divisasPrice = divisasAplicaIva ? divisasPriceNoIVA * (1 + divisasIva / 100) : divisasPriceNoIVA;
+
+      const customPriceNoIVA = basePrice * (1 - customDiscount / 100);
+      const customPrice = customAplicaIva ? customPriceNoIVA * (1 + customIva / 100) : customPriceNoIVA;
+
+      let previewHTML = `
+        <div class="bg-blue-100 p-3 rounded-lg">
+          <p class="font-semibold text-blue-800">💳 Transferencia</p>
+          <p class="text-sm">Desc: ${transfDiscount}% | IVA: ${transfAplicaIva ? transfIva + '%' : 'No'}</p>
+          <p class="text-lg font-bold text-blue-600">$${transfPrice.toFixed(2)}</p>
+        </div>
+        <div class="bg-green-100 p-3 rounded-lg">
+          <p class="font-semibold text-green-800">💰 Cashea</p>
+          <p class="text-sm">Desc: ${casheaDiscount}% | IVA: ${casheaAplicaIva ? casheaIva + '%' : 'No'}</p>
+          <p class="text-lg font-bold text-green-600">$${casheaPrice.toFixed(2)}</p>
+        </div>
+        <div class="bg-purple-100 p-3 rounded-lg">
+          <p class="font-semibold text-purple-800">🌍 Divisas</p>
+          <p class="text-sm">Desc: ${divisasDiscount}% | IVA: ${divisasAplicaIva ? divisasIva + '%' : 'No'}</p>
+          <p class="text-lg font-bold text-purple-600">$${divisasPrice.toFixed(2)}</p>
+        </div>
+      `;
+
+      if (customNombre !== "Personalizado" || customDiscount > 0 || customIva > 0) {
+        previewHTML += `
+          <div class="bg-pink-100 p-3 rounded-lg">
+            <p class="font-semibold text-pink-800">➕ ${customNombre}</p>
+            <p class="text-sm">Desc: ${customDiscount}% | IVA: ${customAplicaIva ? customIva + '%' : 'No'}</p>
+            <p class="text-lg font-bold text-pink-600">$${customPrice.toFixed(2)}</p>
+          </div>
+        `;
+      }
+
+      preview.innerHTML = previewHTML;
+    }
+
+    // Adjust Prices Tab
+    document.getElementById("adjust-individual-btn").addEventListener("click", () => {
+      currentAdjustMode = 'individual';
+      updateAdjustModeBtns();
+      renderAdjustOptions();
+    });
+
+    document.getElementById("adjust-category-btn").addEventListener("click", () => {
+      currentAdjustMode = 'category';
+      updateAdjustModeBtns();
+      renderAdjustOptions();
+    });
+
+    document.getElementById("adjust-linear-btn").addEventListener("click", () => {
+      currentAdjustMode = 'linear';
+      updateAdjustModeBtns();
+      renderAdjustOptions();
+    });
+
+    document.getElementById("adjust-local-btn").addEventListener("click", () => {
+      currentAdjustPriceType = 'local';
+      updateAdjustPriceTypeBtns();
+      renderAdjustOptions();
+    });
+
+    document.getElementById("adjust-divisas-btn").addEventListener("click", () => {
+      currentAdjustPriceType = 'divisas';
+      updateAdjustPriceTypeBtns();
+      renderAdjustOptions();
+    });
+
+    function updateAdjustModeBtns() {
+      document.getElementById("adjust-individual-btn").className = currentAdjustMode === 'individual' ? "px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium transition-colors" : "px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-400";
+      document.getElementById("adjust-category-btn").className = currentAdjustMode === 'category' ? "px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium transition-colors" : "px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-400";
+      document.getElementById("adjust-linear-btn").className = currentAdjustMode === 'linear' ? "px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium transition-colors" : "px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-400";
+    }
+
+    function updateAdjustPriceTypeBtns() {
+      document.getElementById("adjust-local-btn").className = currentAdjustPriceType === 'local' ? "flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors" : "flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-400";
+      document.getElementById("adjust-divisas-btn").className = currentAdjustPriceType === 'divisas' ? "flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors" : "flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors hover:bg-gray-400";
+    }
+
+    function renderAdjustOptions() {
+      const container = document.getElementById("adjust-container");
+      container.innerHTML = "";
+
+      if (allProducts.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay productos</p>';
+        return;
+      }
+
+      if (currentAdjustMode === 'individual') {
+        const select = document.createElement("select");
+        select.id = "adjust-product-select";
+        select.className = "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 mb-3";
+        select.innerHTML = '<option value="">Selecciona un producto</option>';
+        allProducts.forEach(p => {
+          const option = document.createElement("option");
+          option.value = p.__backendId;
+          option.textContent = p.nombre;
+          select.appendChild(option);
+        });
+        container.appendChild(select);
+
+        const div = document.createElement("div");
+        div.className = "space-y-3";
+        div.innerHTML = `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Porcentaje Ajuste</label>
+            <input type="number" id="adjust-percentage" step="0.01" placeholder="Ej: 10 o -5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+          </div>
+          <button type="button" id="apply-adjust-btn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors">Aplicar</button>
+        `;
+        container.appendChild(div);
+
+        document.getElementById("apply-adjust-btn").addEventListener("click", applyAdjustment);
+      } else if (currentAdjustMode === 'category') {
+        const categories = [...new Set(allProducts.map(p => p.categoria))];
+        
+        categories.forEach(category => {
+          const categoryProducts = allProducts.filter(p => p.categoria === category);
+          const priceType = currentAdjustPriceType === 'local' ? 'precio_local' : 'precio_divisas';
+          const avgPrice = categoryProducts.reduce((a, b) => a + Number(b[priceType]), 0) / categoryProducts.length;
+
+          const div = document.createElement("div");
+          div.className = "bg-white p-3 rounded-lg border border-gray-300";
+          div.innerHTML = `
+            <div class="mb-3">
+              <p class="font-bold text-gray-800">${category}</p>
+              <p class="text-xs text-gray-500">${categoryProducts.length} productos - Promedio: $${avgPrice.toFixed(2)}</p>
+            </div>
+            <div class="space-y-2">
+              <input type="number" step="0.01" placeholder="% ajuste" class="w-full px-3 py-2 text-sm border border-gray-300 rounded adjust-cat-percentage" data-category="${category}">
+              <button type="button" class="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors apply-cat-adjust-btn" data-category="${category}">Aplicar</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+
+        document.querySelectorAll(".apply-cat-adjust-btn").forEach(btn => {
+          btn.addEventListener("click", applyAdjustment);
+        });
+      } else if (currentAdjustMode === 'linear') {
+        const div = document.createElement("div");
+        div.className = "bg-white p-4 rounded-lg border border-gray-300 space-y-3";
+        div.innerHTML = `
+          <p class="text-sm font-medium text-gray-700">Ajustar TODOS los precios ${currentAdjustPriceType === 'local' ? 'Locales' : 'Divisas'}</p>
+          <input type="number" id="adjust-linear-percentage" step="0.01" placeholder="% ajuste" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+          <p class="text-xs text-yellow-700 bg-yellow-50 p-2 rounded">⚠️ Se ajustarán TODOS los ${allProducts.length} productos</p>
+          <button type="button" id="apply-linear-adjust-btn" class="w-full bg-green-600 hover:bg-green-700 text-white px-2 py-2 rounded text-sm transition-colors font-medium">Aplicar a Todos</button>
+        `;
+        container.appendChild(div);
+
+        document.getElementById("apply-linear-adjust-btn").addEventListener("click", applyAdjustment);
+      }
+    }
+
+    async function applyAdjustment() {
+      if (isProcessing) return;
+
+      let productsToUpdate = [];
+      let percentage = 0;
+
+      if (currentAdjustMode === 'individual') {
+        const productId = document.getElementById("adjust-product-select").value;
+        if (!productId) {
+          alert("Selecciona un producto");
+          return;
+        }
+        percentage = parseFloat(document.getElementById("adjust-percentage").value);
+        productsToUpdate = allProducts.filter(p => p.__backendId === productId);
+      } else if (currentAdjustMode === 'category') {
+        const btn = event.target;
+        const category = btn.dataset.category;
+        const input = btn.closest("div").querySelector(".adjust-cat-percentage");
+        percentage = parseFloat(input.value);
+        productsToUpdate = allProducts.filter(p => p.categoria === category);
+      } else if (currentAdjustMode === 'linear') {
+        percentage = parseFloat(document.getElementById("adjust-linear-percentage").value);
+        productsToUpdate = allProducts.slice();
+      }
+
+      if (isNaN(percentage)) {
+        alert("Ingresa un porcentaje válido");
+        return;
+      }
+
+      showProgressModal("Aplicando ajustes de precio");
+      const priceField = currentAdjustPriceType === 'local' ? 'precio_local' : 'precio_divisas';
+      let successCount = 0;
+      const total = productsToUpdate.length;
+
+      for (let i = 0; i < productsToUpdate.length; i++) {
+        if (processingAbort) break;
+
+        try {
+          const product = productsToUpdate[i];
+          updateProgress(i + 1, total, `${product.nombre}`);
+
+          if (!product.__backendId) {
+            console.warn("Producto sin ID:", product.nombre);
+            continue;
+          }
+
+          const oldPrice = Number(product[priceField]) || 0;
+          const newPriceRaw = oldPrice * (1 + percentage / 100);
+          const newPrice = roundToNearest5(newPriceRaw);
+
+          const updatedProduct = {
+            __backendId: product.__backendId,
+            nombre: String(product.nombre || ""),
+            categoria: String(product.categoria || ""),
+            precio_local: Number(product.precio_local) || 0,
+            precio_divisas: Number(product.precio_divisas) || 0,
+            descripcion: String(product.descripcion || ""),
+            transferencia_descuento: Number(product.transferencia_descuento) || 0,
+            transferencia_iva: Number(product.transferencia_iva) || 0,
+            transferencia_aplica_iva: Number(product.transferencia_aplica_iva) || 0,
+            cashea_descuento: Number(product.cashea_descuento) || 0,
+            cashea_iva: Number(product.cashea_iva) || 0,
+            cashea_aplica_iva: Number(product.cashea_aplica_iva) || 0,
+            divisas_descuento: Number(product.divisas_descuento) || 0,
+            divisas_iva: Number(product.divisas_iva) || 0,
+            divisas_aplica_iva: Number(product.divisas_aplica_iva) || 0,
+            metodo_personalizado_nombre: String(product.metodo_personalizado_nombre || ""),
+            metodo_personalizado_descuento: Number(product.metodo_personalizado_descuento || 0),
+            metodo_personalizado_iva: Number(product.metodo_personalizado_iva || 0),
+            metodo_personalizado_aplica_iva: Number(product.metodo_personalizado_aplica_iva || 0)
+          };
+
+          updatedProduct[priceField] = newPrice;
+
+          const result = await window.dataSdk.update(updatedProduct);
+          if (result.isOk) {
+            successCount++;
+          } else {
+            console.error(`Error actualizando ${product.nombre}:`, result.error);
+          }
+        } catch (error) {
+          console.error("Excepción:", error);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      closeProgressModal();
+      alert(`✅ ${successCount}/${total} productos ajustados correctamente`);
+    }
+
+    // Edit product modal
+    function openEditProductModal(productId) {
+      const product = allProducts.find(p => p.__backendId === productId);
+      if (!product) return;
+
+      document.getElementById("edit-product-name").value = product.nombre;
+      document.getElementById("edit-product-category").value = product.categoria;
+      document.getElementById("edit-product-price-local").value = product.precio_local;
+      document.getElementById("edit-product-price-divisas").value = product.precio_divisas;
+      document.getElementById("edit-product-description").value = product.descripcion || "";
+      
+      document.getElementById("edit-product-modal").dataset.productId = productId;
+      document.getElementById("edit-product-modal").classList.remove("hidden");
+    }
+
+    document.getElementById("close-edit-modal-btn").addEventListener("click", () => {
+      document.getElementById("edit-product-modal").classList.add("hidden");
+    });
+
+    document.getElementById("edit-product-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const productId = document.getElementById("edit-product-modal").dataset.productId;
+      const product = allProducts.find(p => p.__backendId === productId);
+      if (!product) return;
+
+      const updates = {
+        nombre: document.getElementById("edit-product-name").value,
+        categoria: document.getElementById("edit-product-category").value,
+        precio_local: roundToNearest5(parseFloat(document.getElementById("edit-product-price-local").value) || 0),
+        precio_divisas: roundToNearest5(parseFloat(document.getElementById("edit-product-price-divisas").value) || 0),
+        descripcion: document.getElementById("edit-product-description").value
+      };
+
+      const btn = e.target.querySelector("button[type='submit']");
+      btn.disabled = true;
+      btn.innerHTML = "Guardando...";
+
+      const updatedProduct = {
+        ...product,
+        ...updates,
+        transferencia_descuento: Number(product.transferencia_descuento) || 0,
+        transferencia_iva: Number(product.transferencia_iva) || 0,
+        transferencia_aplica_iva: Number(product.transferencia_aplica_iva) || 0,
+        cashea_descuento: Number(product.cashea_descuento) || 0,
+        cashea_iva: Number(product.cashea_iva) || 0,
+        cashea_aplica_iva: Number(product.cashea_aplica_iva) || 0,
+        divisas_descuento: Number(product.divisas_descuento) || 0,
+        divisas_iva: Number(product.divisas_iva) || 0,
+        divisas_aplica_iva: Number(product.divisas_aplica_iva) || 0,
+        metodo_personalizado_nombre: String(product.metodo_personalizado_nombre || ""),
+        metodo_personalizado_descuento: Number(product.metodo_personalizado_descuento || 0),
+        metodo_personalizado_iva: Number(product.metodo_personalizado_iva || 0),
+        metodo_personalizado_aplica_iva: Number(product.metodo_personalizado_aplica_iva || 0)
+      };
+
+      const result = await window.dataSdk.update(updatedProduct);
+
+      btn.disabled = false;
+      btn.innerHTML = "💾 Guardar Cambios";
+
+      if (result.isOk) {
+        document.getElementById("edit-product-modal").classList.add("hidden");
+        alert("✅ Producto actualizado correctamente");
+      } else {
+        alert("Error: " + (result.error?.message || "Error desconocido"));
+      }
+    });
+
+    function renderAdminProducts() {
+      const container = document.getElementById("products-admin-list");
+      const searchTerm = document.getElementById("admin-search-input").value.toLowerCase();
+      
+      const filtered = allProducts.filter(p => 
+        p.nombre.toLowerCase().includes(searchTerm) || 
+        p.categoria.toLowerCase().includes(searchTerm)
+      );
+
+      container.innerHTML = "";
+
+      if (allProducts.length === 0) {
+        container.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">No hay productos</td></tr>';
+        return;
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500">No se encontraron</td></tr>';
+        return;
+      }
+
+      filtered.forEach(product => {
+        const row = document.createElement("tr");
+        row.className = "hover:bg-gray-50 transition-colors";
+        row.innerHTML = `
+          <td class="px-4 py-3 font-medium text-gray-800">${product.nombre}</td>
+          <td class="px-4 py-3 text-gray-600">${product.categoria}</td>
+          <td class="px-4 py-3 text-right font-semibold text-blue-600">$${Number(product.precio_local).toFixed(2)}</td>
+          <td class="px-4 py-3 text-right font-semibold text-purple-600">$${Number(product.precio_divisas).toFixed(2)}</td>
+          <td class="px-4 py-3 text-center">
+            <div class="flex gap-2 justify-center">
+              <button type="button" class="edit-product-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors" data-product-id="${product.__backendId}">✏️ Editar</button>
+              <button type="button" class="delete-product-admin-btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors" data-product-id="${product.__backendId}">🗑️ Eliminar</button>
+            </div>
+          </td>
+        `;
+        container.appendChild(row);
+      });
+
+      document.querySelectorAll(".edit-product-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const productId = btn.dataset.productId;
+          openEditProductModal(productId);
+        });
+      });
+
+      document.querySelectorAll(".delete-product-admin-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const productId = btn.dataset.productId;
+          const product = allProducts.find(p => p.__backendId === productId);
+          if (!product) {
+            alert("❌ Producto no encontrado");
+            return;
+          }
+
+          // Show confirmation inline
+          const currentBtn = btn;
+          const originalText = currentBtn.innerHTML;
+          currentBtn.innerHTML = '¿Confirmar?';
+          currentBtn.className = "delete-confirm-btn bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors";
+
+          let confirmTimeout = null;
+          
+          const confirmClick = async (e) => {
+            e.stopPropagation();
+            currentBtn.removeEventListener("click", confirmClick);
+            currentBtn.disabled = true;
+            currentBtn.innerHTML = 'Eliminando...';
+
+            try {
+              const result = await window.dataSdk.delete(product);
+              if (result.isOk) {
+                currentBtn.closest("tr").style.opacity = "0.5";
+                await new Promise(resolve => setTimeout(resolve, 500));
+              } else {
+                alert("❌ Error: " + (result.error?.message || "Error desconocido"));
+                currentBtn.disabled = false;
+                currentBtn.innerHTML = originalText;
+                currentBtn.className = "delete-product-admin-btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors";
+                currentBtn.addEventListener("click", confirmClick);
+              }
+            } catch (error) {
+              alert("❌ Error: " + error.message);
+              currentBtn.disabled = false;
+              currentBtn.innerHTML = originalText;
+              currentBtn.className = "delete-product-admin-btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors";
+              currentBtn.addEventListener("click", confirmClick);
+            }
+          };
+
+          currentBtn.addEventListener("click", confirmClick);
+
+          // Cancel after 5 seconds
+          confirmTimeout = setTimeout(() => {
+            currentBtn.removeEventListener("click", confirmClick);
+            currentBtn.innerHTML = originalText;
+            currentBtn.className = "delete-product-admin-btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors";
+            renderAdminProducts();
+          }, 5000);
+        });
+      });
+    }
+
+    document.getElementById("admin-search-input").addEventListener("input", renderAdminProducts);
+
+    function filterAndRenderProducts() {
+      const searchTerm = document.getElementById("search-input").value.toLowerCase();
+      const categoryFilter = document.getElementById("category-filter").value;
+
+      filteredProducts = allProducts.filter(product => {
+        const matchesSearch = product.nombre.toLowerCase().includes(searchTerm) || 
+                             String(product.descripcion || "").toLowerCase().includes(searchTerm);
+        const matchesCategory = !categoryFilter || product.categoria === categoryFilter;
+        return matchesSearch && matchesCategory;
+      });
+
+      renderProductsList();
+      renderAdminProducts();
+      loadMethodCategories();
+    }
+
+    function renderProductsList() {
+      const container = document.getElementById("products-list");
+      const emptyState = document.getElementById("empty-state");
+
+      if (filteredProducts.length === 0) {
+        container.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+      container.innerHTML = "";
+
+      filteredProducts.forEach(product => {
+        const card = document.createElement("div");
+        card.className = "price-card bg-white rounded-lg shadow-md p-3 border-l-4 border-red-600";
+
+        const transfPriceNoIVA = Number(product.precio_local) * (1 - Number(product.transferencia_descuento) / 100);
+        const transfPrice = product.transferencia_aplica_iva ? transfPriceNoIVA * (1 + Number(product.transferencia_iva) / 100) : transfPriceNoIVA;
+        
+        const casheaPriceNoIVA = Number(product.precio_local) * (1 - Number(product.cashea_descuento) / 100);
+        const casheaPrice = product.cashea_aplica_iva ? casheaPriceNoIVA * (1 + Number(product.cashea_iva) / 100) : casheaPriceNoIVA;
+        
+        const divisasPriceNoIVA = Number(product.precio_divisas) * (1 - Number(product.divisas_descuento) / 100);
+        const divisasPrice = product.divisas_aplica_iva ? divisasPriceNoIVA * (1 + Number(product.divisas_iva) / 100) : divisasPriceNoIVA;
+
+        card.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-gray-800">${product.nombre}</h3>
+            <span class="text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded">${product.categoria}</span>
+          </div>
+          
+          <div class="bg-gray-50 p-2 rounded-lg mb-2 border border-gray-200">
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="text-gray-600">Precio Base Local:</span>
+                <p class="font-bold text-blue-600">$${Number(product.precio_local).toFixed(2)}</p>
+              </div>
+              <div>
+                <span class="text-gray-600">Precio Base Divisas:</span>
+                <p class="font-bold text-purple-600">$${Number(product.precio_divisas).toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-2 pt-2">
+            <div class="bg-blue-50 p-2 rounded-lg">
+              <div class="text-xs font-semibold text-blue-600 mb-1">💳 Transf.</div>
+              <div class="text-xs text-gray-600 mb-1">
+                <span class="line-through">$${Number(product.precio_local).toFixed(2)}</span>
+                <span class="font-bold text-red-600 ml-1">-${Number(product.transferencia_descuento)}%</span>
+              </div>
+              <div class="text-xs text-gray-600 mb-1">
+                <span class="text-gray-500">Desc:</span>
+                <span class="font-bold text-red-600">$${transfPriceNoIVA.toFixed(2)}</span>
+              </div>
+              <div class="text-sm font-bebas ${product.transferencia_aplica_iva ? 'text-blue-600' : 'text-gray-600'} mb-0.5">$${transfPrice.toFixed(2)}</div>
+              <div class="text-xs text-gray-500">${product.transferencia_aplica_iva ? `+IVA ${Number(product.transferencia_iva)}%` : "Sin IVA"}</div>
+            </div>
+            
+            <div class="bg-green-50 p-2 rounded-lg">
+              <div class="text-xs font-semibold text-green-600 mb-1">💰 Cashea</div>
+              <div class="text-xs text-gray-600 mb-1">
+                <span class="line-through">$${Number(product.precio_local).toFixed(2)}</span>
+                <span class="font-bold text-red-600 ml-1">-${Number(product.cashea_descuento)}%</span>
+              </div>
+              <div class="text-xs text-gray-600 mb-1">
+                <span class="text-gray-500">Desc:</span>
+                <span class="font-bold text-red-600">$${casheaPriceNoIVA.toFixed(2)}</span>
+              </div>
+              <div class="text-sm font-bebas ${product.cashea_aplica_iva ? 'text-green-600' : 'text-gray-600'} mb-0.5">$${casheaPrice.toFixed(2)}</div>
+              <div class="text-xs text-gray-500">${product.cashea_aplica_iva ? `+IVA ${Number(product.cashea_iva)}%` : "Sin IVA"}</div>
+            </div>
+            
+            <div class="bg-purple-50 p-2 rounded-lg">
+              <div class="text-xs font-semibold text-purple-600 mb-1">🌍 Divisas</div>
+              <div class="text-xs text-gray-600 mb-1">
+                <span class="line-through">$${Number(product.precio_divisas).toFixed(2)}</span>
+                <span class="font-bold text-red-600 ml-1">-${Number(product.divisas_descuento)}%</span>
+              </div>
+              <div class="text-xs text-gray-600 mb-1">
+                <span class="text-gray-500">Desc:</span>
+                <span class="font-bold text-red-600">$${divisasPriceNoIVA.toFixed(2)}</span>
+              </div>
+              <div class="text-sm font-bebas ${product.divisas_aplica_iva ? 'text-purple-600' : 'text-gray-600'} mb-0.5">$${divisasPrice.toFixed(2)}</div>
+              <div class="text-xs text-gray-500">${product.divisas_aplica_iva ? `+IVA ${Number(product.divisas_iva)}%` : "Sin IVA"}</div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function updateCategories() {
+      const categories = [...new Set(allProducts.map(p => p.categoria))].sort();
+      const select = document.getElementById("category-filter");
+      const currentValue = select.value;
+
+      select.innerHTML = '<option value="">Todas las categorías</option>';
+      categories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+
+      select.value = currentValue;
+    }
+
+    document.getElementById("search-input").addEventListener("input", filterAndRenderProducts);
+    document.getElementById("category-filter").addEventListener("change", filterAndRenderProducts);
+
+    // Export to CSV - FORMULA COMPLETAMENTE NUEVA
+    document.getElementById("export-csv-btn").addEventListener("click", () => {
+      try {
+        if (!allProducts || allProducts.length === 0) {
+          alert("⚠️ No hay productos para exportar");
+          return;
+        }
+
+        // Construir CSV línea por línea
+        let csvContent = "Nombre,Categoría,Precio Local,Precio Divisas,Descripción\n";
+
+        allProducts.forEach(product => {
+          const nombre = String(product.nombre || "").replace(/"/g, '""');
+          const categoria = String(product.categoria || "").replace(/"/g, '""');
+          const precioLocal = Number(product.precio_local) || 0;
+          const precioDivisas = Number(product.precio_divisas) || 0;
+          const descripcion = String(product.descripcion || "").replace(/"/g, '""');
+
+          csvContent += `"${nombre}","${categoria}",${precioLocal},${precioDivisas},"${descripcion}"\n`;
+        });
+
+        // Crear archivo y descargar
+        const element = document.createElement("a");
+        element.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent));
+        element.setAttribute("download", "precios-grupo-chirica-" + new Date().toISOString().split('T')[0] + ".csv");
+        element.style.display = "none";
+        
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+
+        alert(`✅ Descargado: ${allProducts.length} productos en CSV`);
+      } catch (error) {
+        alert("❌ Error exportando: " + error.message);
+        console.error(error);
+      }
+    });
+
+    // Export to JSON - FORMULA COMPLETAMENTE NUEVA
+    document.getElementById("export-json-btn").addEventListener("click", () => {
+      try {
+        if (!allProducts || allProducts.length === 0) {
+          alert("⚠️ No hay productos para exportar");
+          return;
+        }
+
+        // Limpiar datos y exportar
+        const cleanProducts = allProducts.map(p => ({
+          nombre: String(p.nombre || ""),
+          categoria: String(p.categoria || ""),
+          precio_local: Number(p.precio_local) || 0,
+          precio_divisas: Number(p.precio_divisas) || 0,
+          descripcion: String(p.descripcion || "")
+        }));
+
+        const jsonString = JSON.stringify(cleanProducts, null, 2);
+
+        // Crear archivo y descargar
+        const element = document.createElement("a");
+        element.setAttribute("href", "data:application/json;charset=utf-8," + encodeURIComponent(jsonString));
+        element.setAttribute("download", "precios-grupo-chirica-" + new Date().toISOString().split('T')[0] + ".json");
+        element.style.display = "none";
+        
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+
+        alert(`✅ Descargado: ${allProducts.length} productos en JSON`);
+      } catch (error) {
+        alert("❌ Error exportando: " + error.message);
+        console.error(error);
+      }
+    });
+
+    // Import file handler
+    document.getElementById("import-file-btn").addEventListener("click", async () => {
+      const fileInput = document.getElementById("import-file");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("⚠️ Por favor selecciona un archivo");
+        return;
+      }
+
+      if (!window.dataSdk) {
+        alert("❌ Data SDK no disponible");
+        return;
+      }
+
+      if (isProcessing) return;
+
+      try {
+        const fileContent = await file.text();
+        let productsToImport = [];
+
+        if (file.name.endsWith('.csv')) {
+          const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+          if (lines.length < 2) throw new Error("CSV vacío");
+
+          const headerLine = lines[0];
+          const headers = [];
+          let currentHeader = "";
+          let inQuotes = false;
+          
+          for (let i = 0; i < headerLine.length; i++) {
+            const char = headerLine[i];
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              headers.push(currentHeader.replace(/^"|"$/g, '').trim());
+              currentHeader = "";
             } else {
-                document.getElementById('loginError').classList.remove('hidden');
-                showToast('Contraseña incorrecta', 'error');
+              currentHeader += char;
             }
-        }
+          }
+          headers.push(currentHeader.replace(/^"|"$/g, '').trim());
 
-        function loginSuccess(role) {
-            currentRole = role;
-            currentUser = role;
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('userRoleBadge').textContent = role === 'admin' ? 'Administrador' : 'Vendedor';
-            
-            if (role === 'admin') {
-                document.getElementById('adminMenu').classList.remove('hidden');
-                document.getElementById('adminMenu2').classList.remove('hidden');
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i];
+            const values = [];
+            let currentValue = "";
+            let inQuotes = false;
+
+            for (let j = 0; j < line.length; j++) {
+              const char = line[j];
+              if (char === '"') {
+                if (inQuotes && line[j + 1] === '"') {
+                  currentValue += '"';
+                  j++;
+                } else {
+                  inQuotes = !inQuotes;
+                }
+              } else if (char === ',' && !inQuotes) {
+                values.push(currentValue.trim());
+                currentValue = "";
+              } else {
+                currentValue += char;
+              }
             }
-            
-            loadProducts();
-            showToast(`¡Bienvenido ${role === 'admin' ? 'Administrador' : 'Vendedor'}!`, 'success');
-        }
+            values.push(currentValue.trim());
 
-        function closeLogin() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('passwordInput').value = '';
-            document.getElementById('loginError').classList.add('hidden');
-        }
-
-        function logout() {
-            currentUser = null;
-            currentRole = null;
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('loginModal').style.display = 'flex';
-            document.getElementById('loginForm').classList.add('hidden');
-            showToast('Sesión cerrada correctamente', 'info');
-        }
-
-        // ========== GESTIÓN DE PRODUCTOS ==========
-        function loadProducts() {
-            const tbody = document.getElementById('productsTableBody');
-            
-            if (products.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="no-data">No hay productos aún. Agrega productos desde el panel de Administrador.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = products.map((p, index) => `
-                <tr>
-                    <td>${p.name}</td>
-                    <td>${p.category}</td>
-                    <td>$${parseFloat(p.priceLocal || 0).toFixed(2)}</td>
-                    <td>$${parseFloat(p.priceDivisas || 0).toFixed(2)}</td>
-                    <td>
-                        ${currentRole === 'admin' ? `
-                            <button class="action-btn edit-btn" onclick="editProduct(${index})"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn delete-btn" onclick="deleteProduct(${index})"><i class="fas fa-trash"></i></button>
-                        ` : `<span>Solo lectura</span>`}
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function addProduct() {
-            const name = document.getElementById('productName').value;
-            const category = document.getElementById('productCategory').value;
-            const priceLocal = document.getElementById('priceLocal').value;
-            const priceDivisas = document.getElementById('priceDivisas').value;
-            const description = document.getElementById('productDescription').value;
-
-            if (!name || !category || !priceLocal || !priceDivisas) {
-                showToast('Por favor completa todos los campos obligatorios', 'error');
-                return;
-            }
-
-            products.push({
-                name,
-                category,
-                priceLocal: parseFloat(priceLocal),
-                priceDivisas: parseFloat(priceDivisas),
-                description: description || '',
-                createdAt: new Date().toISOString()
+            const product = {};
+            headers.forEach((header, idx) => {
+              product[header] = values[idx] || "";
             });
 
-            saveProducts();
-            loadProducts();
-            showToast('Producto agregado exitosamente', 'success');
-            
-            // Limpiar formulario
-            document.getElementById('productName').value = '';
-            document.getElementById('productCategory').value = '';
-            document.getElementById('priceLocal').value = '';
-            document.getElementById('priceDivisas').value = '';
-            document.getElementById('productDescription').value = '';
-        }
-
-        function deleteProduct(index) {
-            if (confirm('¿Estás seguro de eliminar este producto?')) {
-                products.splice(index, 1);
-                saveProducts();
-                loadProducts();
-                showToast('Producto eliminado', 'success');
+            if (product.Nombre && product.Categoría) {
+              productsToImport.push({
+                nombre: String(product.Nombre || "").trim(),
+                categoria: String(product.Categoría || "").trim(),
+                precio_local: roundToNearest5(Number(product["Precio Local"]) || 0),
+                precio_divisas: roundToNearest5(Number(product["Precio Divisas"]) || 0),
+                descripcion: String(product.Descripción || "").trim(),
+                transferencia_descuento: 0,
+                transferencia_iva: 16,
+                transferencia_aplica_iva: 1,
+                cashea_descuento: 0,
+                cashea_iva: 16,
+                cashea_aplica_iva: 1,
+                divisas_descuento: 0,
+                divisas_iva: 0,
+                divisas_aplica_iva: 0,
+                metodo_personalizado_nombre: "",
+                metodo_personalizado_descuento: 0,
+                metodo_personalizado_iva: 0,
+                metodo_personalizado_aplica_iva: 0
+              });
             }
-        }
+          }
+        } else if (file.name.endsWith('.json')) {
+          const parsedData = JSON.parse(fileContent);
+          const dataArray = Array.isArray(parsedData) ? parsedData : [parsedData];
 
-        function saveProducts() {
-            localStorage.setItem('gc_products', JSON.stringify(products));
-        }
-
-        // ========== GESTIÓN DE CONTRASEÑAS ==========
-        function changeAdminPassword() {
-            const newPassword = document.getElementById('newAdminPass').value;
-            if (!newPassword || newPassword.length < 4) {
-                showToast('La contraseña debe tener al menos 4 caracteres', 'error');
-                return;
+          dataArray.forEach(product => {
+            if (product.nombre && product.categoria) {
+              productsToImport.push({
+                nombre: String(product.nombre || "").trim(),
+                categoria: String(product.categoria || "").trim(),
+                precio_local: roundToNearest5(Number(product.precio_local) || 0),
+                precio_divisas: roundToNearest5(Number(product.precio_divisas) || 0),
+                descripcion: String(product.descripcion || "").trim(),
+                transferencia_descuento: 0,
+                transferencia_iva: 16,
+                transferencia_aplica_iva: 1,
+                cashea_descuento: 0,
+                cashea_iva: 16,
+                cashea_aplica_iva: 1,
+                divisas_descuento: 0,
+                divisas_iva: 0,
+                divisas_aplica_iva: 0,
+                metodo_personalizado_nombre: "",
+                metodo_personalizado_descuento: 0,
+                metodo_personalizado_iva: 0,
+                metodo_personalizado_aplica_iva: 0
+              });
             }
-            PASSWORDS.admin = newPassword;
-            localStorage.setItem('gc_admin_password', newPassword);
-            document.getElementById('currentAdminPass').value = newPassword;
-            showToast('Contraseña de administrador actualizada', 'success');
+          });
+        } else {
+          throw new Error("Formato no soportado (usa CSV o JSON)");
         }
 
-        function changeSellerPassword() {
-            const newPassword = document.getElementById('newSellerPass').value;
-            if (!newPassword || newPassword.length < 4) {
-                showToast('La contraseña debe tener al menos 4 caracteres', 'error');
-                return;
+        if (productsToImport.length === 0) {
+          throw new Error("No se encontraron productos válidos");
+        }
+
+        if (allProducts.length + productsToImport.length > 999) {
+          throw new Error(`Solo puedes importar ${999 - allProducts.length} productos más`);
+        }
+
+        showProgressModal("Importando productos");
+        let successCount = 0;
+        const total = productsToImport.length;
+
+        for (let i = 0; i < productsToImport.length; i++) {
+          if (processingAbort) break;
+
+          try {
+            const product = productsToImport[i];
+            updateProgress(i + 1, total, `Importando: ${product.nombre}`);
+
+            const result = await window.dataSdk.create(product);
+            if (result.isOk) {
+              successCount++;
+            } else {
+              console.error(`Error importando ${product.nombre}:`, result.error);
             }
-            PASSWORDS.vendedor = newPassword;
-            localStorage.setItem('gc_seller_password', newPassword);
-            document.getElementById('currentSellerPass').value = newPassword;
-            showToast('Contraseña de vendedor actualizada', 'success');
+          } catch (error) {
+            console.error("Error:", error);
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
 
-        // ========== UTILIDADES ==========
-        function showSection(sectionName) {
-            // Ocultar todas las secciones
-            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-            
-            // Mostrar la seleccionada
-            document.getElementById(`section-${sectionName}`).classList.remove('hidden');
-            
-            // Actualizar menú activo
-            document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-        }
+        closeProgressModal();
+        document.getElementById("import-file").value = "";
+        alert(`✅ Se importaron ${successCount}/${total} productos correctamente`);
+      } catch (error) {
+        alert(`❌ Error: ${error.message}`);
+      }
+    });
 
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast ${type} show`;
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
+    // Security functions
+    document.getElementById("save-admin-password-btn").addEventListener("click", () => {
+      const current = document.getElementById("current-admin-password").value;
+      const newPwd = document.getElementById("new-admin-password").value;
+      const confirm = document.getElementById("confirm-admin-password").value;
+      const msgDiv = document.getElementById("admin-password-message");
 
-        // ========== CARGAR CONTRASEÑAS GUARDADAS ==========
-        function loadSavedPasswords() {
-            const savedAdmin = localStorage.getItem('gc_admin_password');
-            const savedSeller = localStorage.getItem('gc_seller_password');
-            
-            if (savedAdmin) PASSWORDS.admin = savedAdmin;
-            if (savedSeller) PASSWORDS.vendedor = savedSeller;
-        }
+      if (!current || current !== adminPassword) {
+        msgDiv.textContent = "❌ Contraseña actual incorrecta";
+        msgDiv.className = "text-sm mt-2 text-red-600";
+        msgDiv.classList.remove("hidden");
+        return;
+      }
 
-        // ========== INICIAR ==========
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSavedPasswords();
-            // Cargar productos guardados
-            products = JSON.parse(localStorage.getItem('gc_products')) || [];
-        });
+      if (newPwd !== confirm || newPwd.length < 6) {
+        msgDiv.textContent = "❌ Las contraseñas no coinciden o son muy cortas";
+        msgDiv.className = "text-sm mt-2 text-red-600";
+        msgDiv.classList.remove("hidden");
+        return;
+      }
 
-        // Permitir login con Enter
-        document.getElementById('passwordInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') login();
-        });
-    </script>
-</body>
+      adminPassword = newPwd;
+      document.getElementById("current-admin-password").value = "";
+      document.getElementById("new-admin-password").value = "";
+      document.getElementById("confirm-admin-password").value = "";
+      
+      msgDiv.textContent = "✅ Contraseña Admin cambiada";
+      msgDiv.className = "text-sm mt-2 text-green-600";
+      msgDiv.classList.remove("hidden");
+
+      document.getElementById("display-admin-pwd").textContent = adminPassword;
+
+      setTimeout(() => msgDiv.classList.add("hidden"), 5000);
+    });
+
+    document.getElementById("save-seller-password-btn").addEventListener("click", () => {
+      const adminVerify = document.getElementById("admin-verify-password").value;
+      const newPwd = document.getElementById("new-seller-password").value;
+      const confirm = document.getElementById("confirm-seller-password").value;
+      const msgDiv = document.getElementById("seller-password-message");
+
+      if (adminVerify !== adminPassword) {
+        msgDiv.textContent = "❌ Contraseña admin incorrecta";
+        msgDiv.className = "text-sm mt-2 text-red-600";
+        msgDiv.classList.remove("hidden");
+        return;
+      }
+
+      if (newPwd !== confirm || newPwd.length < 6) {
+        msgDiv.textContent = "❌ Las contraseñas no coinciden o son muy cortas";
+        msgDiv.className = "text-sm mt-2 text-red-600";
+        msgDiv.classList.remove("hidden");
+        return;
+      }
+
+      sellerPassword = newPwd;
+      document.getElementById("admin-verify-password").value = "";
+      document.getElementById("new-seller-password").value = "";
+      document.getElementById("confirm-seller-password").value = "";
+      
+      msgDiv.textContent = "✅ Contraseña Vendedor cambiada";
+      msgDiv.className = "text-sm mt-2 text-green-600";
+      msgDiv.classList.remove("hidden");
+
+      document.getElementById("display-seller-pwd").textContent = sellerPassword;
+
+      setTimeout(() => msgDiv.classList.add("hidden"), 5000);
+    });
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c40eae4a745721f',t:'MTc2OTQ0MDAyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
